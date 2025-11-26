@@ -48,14 +48,12 @@ public class LoginFrame extends JFrame implements ActionListener {
 		loginButton.setPreferredSize(new Dimension(80, 40));	// 버튼 크기
 		loginButton.setBackground(Color.WHITE);	// 버튼 배경색
 		loginButton.setFocusPainted(false);	// 버튼 선택 시 텍스트 주변 네모박스
-		loginButton.setBorderPainted(true);	// 버튼 테두리
 		//loginButton.setOpaque(true);
 		
 		registerButton = new JButton("회원가입");
 		registerButton.setPreferredSize(new Dimension(130, 40));
 		registerButton.setBackground(Color.WHITE);
 		registerButton.setFocusPainted(false);
-		registerButton.setBorderPainted(true);
 		
 		JPanel mainPanel = new JPanel();
 		
@@ -89,12 +87,12 @@ public class LoginFrame extends JFrame implements ActionListener {
 		// 로그인 버튼 클릭
 		if(obj == loginButton) {
 			// ID PW를 가져옴
-			String ID = IDField.getText();
+			String ID = IDField.getText().trim();
 			String PW = new String(PWField.getPassword());
 			
 			// 유효성 검사
 			if(ID.equals("") || PW.equals("")) {
-				JOptionPane.showMessageDialog(null, "아이디 또는 비밀번호는 공백이 될 수 없습니다!", "경고", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "아이디 또는 비밀번호를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			
@@ -108,7 +106,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 				new MainFrame();
 			}
 			// 로그인 실패 시 안내 메시지 출력 후 재입력 요청
-			else if(!result) {
+			else {
 				JOptionPane.showMessageDialog(null, "로그인 실패", "Information", JOptionPane.WARNING_MESSAGE);
 			}
 		}
