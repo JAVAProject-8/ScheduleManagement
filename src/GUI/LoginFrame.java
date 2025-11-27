@@ -1,5 +1,6 @@
 package GUI;
 
+import DB.User;
 import DB.SDAO;
 
 import javax.swing.*;
@@ -96,14 +97,14 @@ public class LoginFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// DB 조회, 결과 반환
-			boolean result = true;
+			// DAO 객체 참조, DB 조회, 결과 반환
+			User user = null;
 			
 			// 로그인 성공 시 안내 메시지 출력 후 메인 화면으로 이동
-			if(result) {
+			if(user != null) {
 				JOptionPane.showMessageDialog(null, "로그인 성공", "Information", JOptionPane.PLAIN_MESSAGE);
 				dispose();
-				new MainFrame();
+				new MainFrame(user);
 			}
 			// 로그인 실패 시 안내 메시지 출력 후 재입력 요청
 			else {
