@@ -261,7 +261,13 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		
 		// ID 중복 검사 버튼 선택 시
 		if(obj == duplicationButton) {			
-			String ID = IDField.getText();	// ID를 가져옴
+			String ID = IDField.getText().trim();	// ID를 가져옴
+			
+			if(ID.equals("")) {
+				JOptionPane.showMessageDialog(null, "아이디를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
 			boolean result = true; // 중복 검사를 위한 DB 조회 후 결과 반환
 			
 			if(result) {
@@ -330,8 +336,8 @@ public class RegisterFrame extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "소속을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			else if(phoneNumber.equals("")) {
-				JOptionPane.showMessageDialog(null, "전화번호를를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+			else if(phoneNumber.length() != 11) {	// 정상적으로 입력된 전화번호는 11자리임
+				JOptionPane.showMessageDialog(null, "전화번호를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			else if(email.charAt(0) == '@') {
