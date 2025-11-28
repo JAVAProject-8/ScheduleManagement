@@ -1,6 +1,6 @@
 # SMP
 
-## https://github.com/ghdrb1246/ScheduleManagement
+## https://github.com/JAVAProject-8/ScheduleManagement.git
 
 # _Version_
 
