@@ -15,15 +15,14 @@ public class SDAO {
                 ArrayList<Schedule> list = new ArrayList<>();
 
                 // 오늘 날짜에 포함되는 일정 조회
-                String sql = "SELECT schedule_id, writer_id, title, "
-                                + "DATE_FORMAT(start_datetime, '%Y-%m-%d %H:%i') as start_str, "
-                                + "DATE_FORMAT(end_datetime, '%Y-%m-%d %H:%i') as end_str "
-                                + "FROM Schedule "
-                                + "WHERE writer_id = ? "
-                                + "AND start_datetime <= CONCAT(CURDATE(), ' 23:59:59') "
-                                + "AND end_datetime >= CONCAT(CURDATE(), ' 00:00:00') "
-                                + "ORDER BY start_datetime ASC";
-
+                String sql 	= "SELECT schedule_id, writer_id, schedule_name, "
+	                        + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
+	                        + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
+	                        + "FROM schedules " // ★ 테이블명 확인!
+	                        + "WHERE writer_id = ? "
+	                        + "AND start_at <= CONCAT(CURDATE(), ' 23:59:59') "
+	                        + "AND end_at >= CONCAT(CURDATE(), ' 00:00:00') "
+	                        + "ORDER BY start_at ASC";
                 // DB 연결
                 try (Connection conn = DBC.connect();
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -35,7 +34,7 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
-                                        String name = rs.getString("title");
+                                        String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
@@ -52,14 +51,13 @@ public class SDAO {
         public ArrayList<Schedule> getDeadlineSchedules(String userId) {
                 ArrayList<Schedule> list = new ArrayList<>();
 
-                String sql = "SELECT schedule_id, writer_id, title, "
-                                + "DATE_FORMAT(start_datetime, '%Y-%m-%d %H:%i') as start_str, " // Timestamp 타입을
-                                                                                                 // String으로 변환
-                                + "DATE_FORMAT(end_datetime, '%Y-%m-%d %H:%i') as end_str, "
-                                + "From Schedule "
-                                + "WHERE writer_id = " + userId + " "
-                                + "AND end_datetime BEWTWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY)" // 마감 2일전부터 불러오기
-                                + "ORDER BY end_datetime ASC";
+                String sql  = "SELECT schedule_id, writer_id, schedule_name, "
+	                        + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
+	                        + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
+	                        + "FROM schedules "
+	                        + "WHERE writer_id = ? "  
+	                        + "AND end_at BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY) " 
+	                        + "ORDER BY end_at ASC";
 
                 try (Connection conn = DBC.connect(); // DB 연결
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -71,7 +69,7 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
-                                        String name = rs.getString("title");
+                                        String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
