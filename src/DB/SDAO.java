@@ -245,4 +245,234 @@ public class SDAO {
                 return list;
         }
 
+        // 그룹 생성
+        boolean createGroup(String groupName, String writerId) {
+                Connection conn = null;
+                PreparedStatement pstmtGroup = null;
+                PreparedStatement pstmtMember = null;
+                ResultSet rs = null;
+                boolean isSuccess = false;
+                String inviteCode;
+
+                try {
+                        conn = DBC.connect();
+
+                        // 초대 코드 생성
+                        inviteCode = generateInviteCode(conn);
+
+                        // 트랜잭션 시작 (두 개의 INSERT가 모두 성공해야 함)
+                        conn.setAutoCommit(false);
+
+                        // user_groups 테이블에 그룹 정보 INSERT
+                        // RETURN_GENERATED_KEYS: 방금 만든 그룹의 ID(PK)를 알아내기 위함
+                        String sqlGroup = "INSERT INTO user_groups (group_name, invite_code) VALUES (?, ?)";
+                        pstmtGroup = conn.prepareStatement(sqlGroup, Statement.RETURN_GENERATED_KEYS);
+                        pstmtGroup.setString(1, groupName);
+                        pstmtGroup.setString(2, inviteCode);
+                        int result1 = pstmtGroup.executeUpdate();
+
+                        // 방금 생성된 group_id 가져오기
+                        int newGroupId = 0;
+                        rs = pstmtGroup.getGeneratedKeys();
+                        if (rs.next()) {
+                                newGroupId = rs.getInt(1);
+                        }
+
+                        // group_members 테이블에 작성자를 admin으로 추가
+                        String sqlMember = "INSERT INTO group_members (user_id, group_id, is_admin, progress) VALUES (?, ?, 'Y', 0)";
+                        pstmtMember = conn.prepareStatement(sqlMember);
+                        pstmtMember.setString(1, writerId);
+                        pstmtMember.setInt(2, newGroupId);
+                        int result2 = pstmtMember.executeUpdate();
+
+                        // 두 단계 모두 성공했다면 커밋(저장)
+                        if (result1 > 0 && result2 > 0) {
+                                conn.commit();
+                                isSuccess = true;
+                                System.out.println("그룹 생성 완료! 코드: " + inviteCode);
+                        } else {
+                                conn.rollback(); // 하나라도 실패하면 취소
+                        }
+
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        try {
+                                if (conn != null)
+                                        conn.rollback();
+                        } catch (SQLException se) {
+                                se.printStackTrace();
+                        }
+                } finally {
+                        // 자원 해제 (conn은 닫지 않고, 문맥에 따라 처리하거나 여기서 닫음)
+                        try {
+                                if (rs != null)
+                                        rs.close();
+                                if (pstmtGroup != null)
+                                        pstmtGroup.close();
+                                if (pstmtMember != null)
+                                        pstmtMember.close();
+                                if (conn != null)
+                                        conn.close();
+                        } catch (Exception e) {
+                                e.printStackTrace();
+                        }
+                }
+
+                return isSuccess;
+        }
+
+        // 그룹 가입
+        // 리턴값: 1 = 성공 || 0 = 초대코드 오류 || -1 = 이미 가입됨/DB오류
+        public int joinGroup(String userId, String inviteCode) {
+                Connection conn = null;
+                PreparedStatement pstmtFind = null;
+                PreparedStatement pstmtInsert = null;
+                ResultSet rs = null;
+
+                int resultStatus = 0;
+
+                try {
+                        conn = DBC.connect();
+
+                        // 초대 코드로 그룹 ID 찾기
+                        String sqlFind = "SELECT group_id, group_name FROM user_groups WHERE invite_code = ?";
+                        pstmtFind = conn.prepareStatement(sqlFind);
+                        pstmtFind.setString(1, inviteCode);
+
+                        rs = pstmtFind.executeQuery();
+
+                        if (rs.next()) {
+                                // 그룹을 찾음
+                                int groupId = rs.getInt("group_id");
+                                String groupName = rs.getString("group_name");
+
+                                // 해당 그룹에 멤버로 INSERT
+                                // 일반 멤버(N), 진척도 0으로 시작
+                                String sqlInsert = "INSERT INTO group_members (user_id, group_id, is_admin, progress, task) VALUES (?, ?, 'N', 0, NULL)";
+
+                                pstmtInsert = conn.prepareStatement(sqlInsert);
+                                pstmtInsert.setString(1, userId);
+                                pstmtInsert.setInt(2, groupId);
+
+                                int row = pstmtInsert.executeUpdate();
+
+                                if (row > 0) {
+                                        System.out.println("['" + groupName + "'] 그룹 가입 성공!");
+                                        resultStatus = 1;
+                                }
+                        } else {
+                                System.out.println("존재하지 않는 초대 코드입니다.");
+                                resultStatus = 0;
+                        }
+
+                } catch (SQLException e) {
+                        // MySQL 에러 코드 1062: Duplicate entry (이미 가입된 경우 PK 중복 발생)
+                        if (e.getErrorCode() == 1062) {
+                                System.out.println("이미 가입된 그룹입니다.");
+                                resultStatus = -1;
+                        } else {
+                                e.printStackTrace();
+                                resultStatus = -1; // 기타 DB 오류
+                        }
+                } finally {
+                        // 자원 해제
+                        try {
+                                if (rs != null)
+                                        rs.close();
+                                if (pstmtFind != null)
+                                        pstmtFind.close();
+                                if (pstmtInsert != null)
+                                        pstmtInsert.close();
+                                if (conn != null)
+                                        conn.close();
+                        } catch (Exception e) {
+                        }
+                }
+
+                return resultStatus;
+        }
+
+        // 업무 갱신
+        public boolean updateTask(String userId, int groupId, String task, String deadline) {
+                String sql = "UPDATE group_members SET task = ?, deadline = ? WHERE user_id = ? AND group_id = ?";
+
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        pstmt.setString(1, task);
+                        pstmt.setString(2, deadline);
+                        pstmt.setString(3, userId);
+                        pstmt.setInt(4, groupId);
+
+                        int result = pstmt.executeUpdate();
+                        return result > 0; // 1개 이상 수정되면 성공
+
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        System.out.println("업무 할당 실패: " + e.getMessage());
+                        return false;
+                }
+        }
+
+        // 업무 진척도 갱신
+        public boolean updateProgress(String userId, int groupId, int progress) {
+                // 유효성 검사 (0~100 사이 값만 허용)
+                if (progress < 0 || progress > 100) {
+                        System.out.println("진척도는 0~100 사이여야 합니다.");
+                        return false;
+                }
+
+                String sql = "UPDATE group_members SET progress = ? WHERE user_id = ? AND group_id = ?";
+
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        pstmt.setInt(1, progress);
+                        pstmt.setString(2, userId);
+                        pstmt.setInt(3, groupId);
+
+                        int result = pstmt.executeUpdate();
+                        return result > 0;
+
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        System.out.println("진척도 수정 실패");
+                        return false;
+                }
+        }
+
+        // 6자리 랜덤 초대 코드 생성
+        private String generateInviteCode(Connection conn) {
+                String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                java.util.Random random = new java.util.Random();
+                String code;
+
+                // 중복 체크
+                while (true) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < 6; i++) {
+                                sb.append(chars.charAt(random.nextInt(chars.length())));
+                        }
+                        code = sb.toString();
+
+                        String sql = "SELECT 1 FROM user_groups WHERE invite_code = ?";
+                        boolean isDuplicate = false;
+
+                        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                                pstmt.setString(1, code);
+                                try (ResultSet rs = pstmt.executeQuery()) {
+                                        if (rs.next()) {
+                                                isDuplicate = true; // 중복됨
+                                        }
+                                }
+                        } catch (SQLException e) {
+                                e.printStackTrace();
+                        }
+
+                        if (!isDuplicate) {
+                                break;
+                        }
+                }
+                return code;
+        }
 }
