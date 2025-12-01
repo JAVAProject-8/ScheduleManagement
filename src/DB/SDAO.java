@@ -271,7 +271,7 @@ public class SDAO {
                 // 해당 그룹의 메모 불러오기
                 String sql = "SELECT memo_id, group_id, writer_id, content, "
                                 + "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_str "
-                                + "FROM Memo "
+                                + "FROM memos "
                                 + "WHERE group_id = ? "
                                 + "ORDER BY created_at DESC";
 

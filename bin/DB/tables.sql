@@ -16,7 +16,7 @@ CREATE TABLE user_groups (
     PRIMARY KEY (group_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
 
-CREATE TABLE group_member (
+CREATE TABLE group_members (
     user_id varchar(20) NOT NULL,
     group_id int NOT NULL,
     is_admin char(1) NOT NULL DEFAULT 'N',
@@ -43,7 +43,7 @@ CREATE TABLE schedules (
     CONSTRAINT fk_schedules_users FOREIGN KEY (writer_id) REFERENCES users (user_id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
 
-CREATE TABLE memos (
+CREATE TABLE memoes (
     memo_id int NOT NULL AUTO_INCREMENT,
     group_id int NOT NULL,
     writer_id varchar(20) NOT NULL,
