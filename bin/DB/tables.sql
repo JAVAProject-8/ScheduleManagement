@@ -16,7 +16,7 @@ CREATE TABLE user_groups (
     PRIMARY KEY (group_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
 
-CREATE TABLE group_member (
+CREATE TABLE group_members (
     user_id varchar(20) NOT NULL,
     group_id int NOT NULL,
     is_admin char(1) NOT NULL DEFAULT 'N',

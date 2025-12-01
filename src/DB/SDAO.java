@@ -77,44 +77,85 @@ public class SDAO {
                 return list;
         }
 
-        // 메모 불러오기
-        public ArrayList<Memo> getMemosByGroupId(int groupId) {
-                ArrayList<Memo> list = new ArrayList<>();
+        // 특정 유저가 가입한 그룹 불러오기
+        public ArrayList<Group> getMyGroups(String userId) {
+                ArrayList<Group> list = new ArrayList<>();
 
-                // 해당 그룹의 메모 불러오기
-                String sql = "SELECT memo_id, group_id, writer_id, content, "
-                                + "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_str "
-                                + "FROM Memo "
-                                + "WHERE group_id = ? "
-                                + "ORDER BY created_at DESC";
+                String sql = "SELECT g.group_id, g.group_name, g.invite_code "
+                                + "FROM user_groups g "
+                                + "JOIN Member m ON g.group_id = m.group_id "
+                                + "WHERE m.user_id = ? "
+                                + "ORDER BY g.group_id ASC";
 
-                // DB 연결
                 try (Connection conn = DBC.connect();
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-                        // SQL의 ? 부분 채우기
-                        pstmt.setInt(1, groupId);
+                        pstmt.setString(1, userId);
 
-                        // 실행 및 결과 받기
                         try (ResultSet rs = pstmt.executeQuery()) {
                                 while (rs.next()) {
-                                        // DB에서 값 꺼내기
-                                        int mId = rs.getInt("memo_id");
-                                        int gId = rs.getInt("group_id");
-                                        String wId = rs.getString("writer_id");
-                                        String content = rs.getString("content");
-                                        String date = rs.getString("date_str"); // 포맷팅된 날짜 문자열
+                                        int id = rs.getInt("group_id");
+                                        String name = rs.getString("group_name");
+                                        String code = rs.getString("invite_code");
 
-                                        // 리스트에 추가
-                                        list.add(new Memo(mId, gId, wId, content, date));
+                                        list.add(new Group(id, name, code));
                                 }
                         }
                 } catch (Exception e) {
                         e.printStackTrace();
-                        System.out.println("메모 조회 중 오류 발생");
+                        System.out.println("내 그룹 목록 조회 실패");
                 }
-
                 return list;
+        }
+
+        // 그룹 ID로 그룹 불러오기
+        public Group getGroupInfo(int groupId) {
+                Group group = null;
+                String sql = "SELECT group_id, group_name, invite_code "
+                                + "FROM user_groups "
+                                + "WHERE group_id = ?";
+
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        pstmt.setInt(1, groupId);
+
+                        try (ResultSet rs = pstmt.executeQuery()) {
+                                if (rs.next()) {
+                                        String name = rs.getString("group_name");
+                                        String code = rs.getString("invite_code");
+                                        group = new Group(groupId, name, code);
+                                }
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return group;
+        }
+
+        // 초대 코드로 그룹 불러오기 (그룹 가입)
+        public Group getGroupByInviteCode(String code) {
+                Group group = null;
+                String sql = "SELECT group_id, group_name, invite_code "
+                                + "FROM user_groups "
+                                + "WHERE invite_code = ?";
+
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        pstmt.setString(1, code);
+
+                        try (ResultSet rs = pstmt.executeQuery()) {
+                                if (rs.next()) {
+                                        int id = rs.getInt("group_id");
+                                        String name = rs.getString("group_name");
+                                        group = new Group(id, name, code);
+                                }
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return group;
         }
 
         // 그룹원 가져오기
@@ -163,4 +204,45 @@ public class SDAO {
 
                 return list;
         }
+
+        // 메모 불러오기
+        public ArrayList<Memo> getMemosByGroupId(int groupId) {
+                ArrayList<Memo> list = new ArrayList<>();
+
+                // 해당 그룹의 메모 불러오기
+                String sql = "SELECT memo_id, group_id, writer_id, content, "
+                                + "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_str "
+                                + "FROM Memo "
+                                + "WHERE group_id = ? "
+                                + "ORDER BY created_at DESC";
+
+                // DB 연결
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        // SQL의 ? 부분 채우기
+                        pstmt.setInt(1, groupId);
+
+                        // 실행 및 결과 받기
+                        try (ResultSet rs = pstmt.executeQuery()) {
+                                while (rs.next()) {
+                                        // DB에서 값 꺼내기
+                                        int mId = rs.getInt("memo_id");
+                                        int gId = rs.getInt("group_id");
+                                        String wId = rs.getString("writer_id");
+                                        String content = rs.getString("content");
+                                        String date = rs.getString("date_str"); // 포맷팅된 날짜 문자열
+
+                                        // 리스트에 추가
+                                        list.add(new Memo(mId, gId, wId, content, date));
+                                }
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("메모 조회 중 오류 발생");
+                }
+
+                return list;
+        }
+
 }
