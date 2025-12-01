@@ -6,6 +6,8 @@ public class Schedule {
     private int scheduleId;
     // 사용자 id
     private String writerId;
+    // 그룹 id
+    private int groupId;
     // 일정 이름
     private String scheduleName;
     // 시작 날짜 + 시간
@@ -16,9 +18,10 @@ public class Schedule {
     private String endAt;
     
     // 일정 객체 생성자
-    public Schedule(int id, String writerId, String name, String startAt, String endAt) {
+    public Schedule(int id, String writerId, int groupId, String name, String startAt, String endAt) {
         this.scheduleId = id;
         this.writerId = writerId;
+        this.groupId = groupId;
         this.scheduleName = name;
         this.startAt = startAt;
         this.endAt = endAt;
@@ -31,6 +34,10 @@ public class Schedule {
     public String getWriterId() {
         return writerId;
     }
+    // 그룹 id 리턴
+    public int getGroupId() {
+		return groupId;
+	}
     // 일정 이름 리턴
     public String getScheduleName() {
         return scheduleName;
@@ -43,4 +50,5 @@ public class Schedule {
     public String getEndAt() {
         return endAt;
     }
+	
 }

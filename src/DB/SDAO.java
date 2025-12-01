@@ -9,10 +9,10 @@ public class SDAO {
                 ArrayList<Schedule> list = new ArrayList<>();
 
                 // 오늘 날짜에 포함되는 일정 조회
-                String sql = "SELECT schedule_id, writer_id, schedule_name, "
+                String sql = "SELECT schedule_id, writer_id, group_id, schedule_name, "
                                 + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
                                 + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
-                                + "FROM schedules " // ★ 테이블명 확인!
+                                + "FROM schedules " 
                                 + "WHERE writer_id = ? "
                                 + "AND start_at <= CONCAT(CURDATE(), ' 23:59:59') "
                                 + "AND end_at >= CONCAT(CURDATE(), ' 00:00:00') "
@@ -28,11 +28,12 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
+                                        int gid = rs.getInt("group_id");
                                         String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
-                                        list.add(new Schedule(id, wId, name, start, end));
+                                        list.add(new Schedule(id, wId, gid, name, start, end));
                                 }
                         }
                 } catch (Exception e) {
@@ -45,7 +46,7 @@ public class SDAO {
         public ArrayList<Schedule> getDeadlineSchedules(String userId) {
                 ArrayList<Schedule> list = new ArrayList<>();
 
-                String sql = "SELECT schedule_id, writer_id, schedule_name, "
+                String sql = "SELECT schedule_id, writer_id, group_id, schedule_name, "
                                 + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
                                 + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
                                 + "FROM schedules "
@@ -63,11 +64,12 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
+                                        int gid = rs.getInt("group_id");
                                         String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
-                                        list.add(new Schedule(id, wId, name, start, end));
+                                        list.add(new Schedule(id, wId, gid, name, start, end));
                                 }
                         }
                 } catch (Exception e) {
@@ -76,7 +78,62 @@ public class SDAO {
 
                 return list;
         }
-
+        // 일정 추가
+        public boolean insertSchedule(Schedule dto) {
+        	Connection conn = null;
+        	PreparedStatement pstmt = null;
+        	
+        	//개인 일정과 그룹 일정 모두 명시함
+        	String sql = "INSERT INTO schedules (writer_id, group_id, schedule_name, start_at, end_at) VALUES (?, ?, ?, ?, ?)";
+        	
+        	boolean result = false;
+        	
+        	try {
+        		conn = DBC.connect();
+        		pstmt = conn.prepareStatement(sql);
+        		
+        		//작성자 ID
+        		pstmt.setString(1, dto.getWriterId());
+        		
+        		// 그룹 ID 처리
+                // Schedule 객체의 groupId가 0이면 -> 개인 일정(DB에 NULL 저장)
+                // 0이 아니면 -> 그룹 일정(DB에 숫자 저장)
+                if (dto.getGroupId() == 0) {
+                    // 개인 일정일 때: DB에 'NULL'을 집어넣으라는 명령어
+                    pstmt.setNull(2, java.sql.Types.INTEGER); 
+                } else {
+                    // 그룹 일정일 때: 실제 그룹 번호(1, 2, 3...)를 집어넣음
+                    pstmt.setInt(2, dto.getGroupId());
+                }
+                
+                // 일정 제목
+                pstmt.setString(3, dto.getScheduleName());
+                
+                // 시작 시간 
+                pstmt.setString(4, dto.getStartAt());
+                
+                // 종료 시간
+                pstmt.setString(5, dto.getEndAt());
+                
+                // 실행
+                int count = pstmt.executeUpdate();
+                if (count > 0) {
+                	result = true;
+                }
+                
+        	}catch(Exception e) {
+        		e.printStackTrace();
+        	}finally {
+        		// 자원 해제
+        		try {
+        			if(pstmt != null) pstmt.close();
+        			DBC.close();    // 연결 끊기	
+        		}catch(Exception e) {
+        			e.printStackTrace();
+        		}
+        	}
+        	return result;
+        }
         // 메모 불러오기
         public ArrayList<Memo> getMemosByGroupId(int groupId) {
                 ArrayList<Memo> list = new ArrayList<>();
