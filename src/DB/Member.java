@@ -13,4 +13,17 @@ public class Member {
     int progress;
     // 마감일
     String deadline;
+    // 유저 이름
+    String user_name;
+
+    public Member(String user_id, int group_id, String is_admin, String task, int progress, String deadline,
+            String user_name) {
+        this.user_id = user_id;
+        this.group_id = group_id;
+        this.is_admin = is_admin;
+        this.task = task;
+        this.progress = progress;
+        this.deadline = deadline;
+        this.user_name = user_name;
+    }
 }

@@ -9,15 +9,14 @@ public class SDAO {
                 ArrayList<Schedule> list = new ArrayList<>();
 
                 // 오늘 날짜에 포함되는 일정 조회
-                String sql = "SELECT schedule_id, writer_id, title, "
-                                + "DATE_FORMAT(start_datetime, '%Y-%m-%d %H:%i') as start_str, "
-                                + "DATE_FORMAT(end_datetime, '%Y-%m-%d %H:%i') as end_str "
-                                + "FROM Schedules "
+                String sql = "SELECT schedule_id, writer_id, schedule_name, "
+                                + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
+                                + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
+                                + "FROM schedules " // ★ 테이블명 확인!
                                 + "WHERE writer_id = ? "
-                                + "AND start_datetime <= CONCAT(CURDATE(), ' 23:59:59') "
-                                + "AND end_datetime >= CONCAT(CURDATE(), ' 00:00:00') "
-                                + "ORDER BY start_datetime ASC";
-
+                                + "AND start_at <= CONCAT(CURDATE(), ' 23:59:59') "
+                                + "AND end_at >= CONCAT(CURDATE(), ' 00:00:00') "
+                                + "ORDER BY start_at ASC";
                 // DB 연결
                 try (Connection conn = DBC.connect();
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -29,7 +28,7 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
-                                        String name = rs.getString("title");
+                                        String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
@@ -46,14 +45,13 @@ public class SDAO {
         public ArrayList<Schedule> getDeadlineSchedules(String userId) {
                 ArrayList<Schedule> list = new ArrayList<>();
 
-                String sql = "SELECT schedule_id, writer_id, title, "
-                                + "DATE_FORMAT(start_datetime, '%Y-%m-%d %H:%i') as start_str, " // Timestamp 타입을
-                                                                                                 // String으로 변환
-                                + "DATE_FORMAT(end_datetime, '%Y-%m-%d %H:%i') as end_str, "
-                                + "From Schedule "
+                String sql = "SELECT schedule_id, writer_id, schedule_name, "
+                                + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
+                                + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
+                                + "FROM schedules "
                                 + "WHERE writer_id = ? "
-                                + "AND end_datetime BEWTWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY)" // 마감 2일전부터 불러오기
-                                + "ORDER BY end_datetime ASC";
+                                + "AND end_at BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY) "
+                                + "ORDER BY end_at ASC";
 
                 try (Connection conn = DBC.connect(); // DB 연결
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -65,7 +63,7 @@ public class SDAO {
                                 while (rs.next()) {
                                         int id = rs.getInt("schedule_id");
                                         String wId = rs.getString("writer_id");
-                                        String name = rs.getString("title");
+                                        String name = rs.getString("schedule_name");
                                         String start = rs.getString("start_str");
                                         String end = rs.getString("end_str");
 
@@ -119,4 +117,50 @@ public class SDAO {
                 return list;
         }
 
+        // 그룹원 가져오기
+        public ArrayList<Member> getMembersByGroupId(int groupId) {
+                ArrayList<Member> list = new ArrayList<>();
+
+                String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, m.progress, "
+                                + "DATE_FORMAT(m.deadline, '%Y-%m-%d') as date_str, "
+                                + "u.name " // User 테이블에서 이름 가져오기
+                                + "FROM group_members m "
+                                + "JOIN users u ON m.user_id = u.user_id "
+                                + "WHERE m.group_id = ? "
+                                + "ORDER BY m.is_admin DESC, u.name ASC";
+
+                try (Connection conn = DBC.connect();
+                                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                        pstmt.setInt(1, groupId);
+
+                        try (ResultSet rs = pstmt.executeQuery()) {
+                                while (rs.next()) {
+                                        // DB에서 값 꺼내기
+                                        String user_id = rs.getString("user_id");
+                                        int group_id = rs.getInt("group_id");
+                                        String is_admin = rs.getString("is_admin");
+                                        String task = rs.getString("task");
+                                        int progress = rs.getInt("progress");
+                                        String deadline = rs.getString("date_str");
+                                        String user_name = rs.getString("name"); // 이름
+
+                                        // null 처리 (업무가 아직 없을 경우)
+                                        if (task == null)
+                                                task = "할당 안됨";
+                                        if (deadline == null)
+                                                deadline = "-";
+
+                                        // 리스트에 추가
+                                        list.add(new Member(user_id, group_id, is_admin, task, progress, deadline,
+                                                        user_name));
+                                }
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("멤버 조회 오류: " + e.getMessage());
+                }
+
+                return list;
+        }
 }
