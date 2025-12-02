@@ -10,6 +10,8 @@ public class Schedule {
     private int groupId;
     // 일정 이름
     private String scheduleName;
+    // 일정 종류
+    private String scheduleType;
     // 시작 날짜 + 시간
     // "2025-11-29 10:00"
     private String startAt;
@@ -18,11 +20,12 @@ public class Schedule {
     private String endAt;
     
     // 일정 객체 생성자
-    public Schedule(int id, String writerId, int groupId, String name, String startAt, String endAt) {
+    public Schedule(int id, String writerId, int groupId, String name, String type, String startAt, String endAt) {
         this.scheduleId = id;
         this.writerId = writerId;
         this.groupId = groupId;
         this.scheduleName = name;
+        this.scheduleType = type;
         this.startAt = startAt;
         this.endAt = endAt;
     }
@@ -41,6 +44,10 @@ public class Schedule {
     // 일정 이름 리턴
     public String getScheduleName() {
         return scheduleName;
+    }
+    // 일정 종류 리턴
+    public String getScheduleType() {
+        return scheduleType;
     }
     // 시작 날짜 + 시간 리턴
     public String getStartAt() {
