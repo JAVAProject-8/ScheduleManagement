@@ -18,7 +18,7 @@ public class Schedule {
     // 마감 날짜 + 시간
     // "2025-11-29 12:00"
     private String endAt;
-    
+
     // 일정 객체 생성자
     /**
      * 일정 객체 생성자
@@ -40,33 +40,40 @@ public class Schedule {
         this.startAt = startAt;
         this.endAt = endAt;
     }
+
     // 일정 id 리턴
     public int getScheduleId() {
         return scheduleId;
     }
+
     // 사용자 id 리턴
     public String getWriterId() {
         return writerId;
     }
+
     // 그룹 id 리턴
     public int getGroupId() {
-		return groupId;
-	}
+        return groupId;
+    }
+
     // 일정 이름 리턴
     public String getScheduleName() {
         return scheduleName;
     }
+
     // 일정 종류 리턴
     public String getScheduleType() {
         return scheduleType;
     }
+
     // 시작 날짜 + 시간 리턴
     public String getStartAt() {
         return startAt;
     }
+
     // 마감 날짜 + 시간 리턴
     public String getEndAt() {
         return endAt;
     }
-	
+
 }
