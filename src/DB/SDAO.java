@@ -404,7 +404,7 @@ public class SDAO {
 
         // 기능: 그룹 생성하고 생성자를 관리자로 등록함 초대코드도 자동으로 생성
         // 매개변수: String groupName, String writerId
-        // 반환값: boolean(true, false)
+        // 반환값: boolean(true, false))
         boolean createGroup(String groupName, String writerId) {
                 Connection conn = null;
                 PreparedStatement pstmtGroup = null;
