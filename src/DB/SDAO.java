@@ -4,34 +4,45 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class SDAO {
-
         // 로그인
-        public int login(String userid, String userPw) {
-                String sql = "SELECT password FROM users WHERE user_id = ?";
+        public User loginGetUser(String userId, String userPw) {
+                User user = null;
+
+                // 아이디와 비밀번호가 모두 일치하는 행을 찾음
+                String sql = "SELECT * FROM users WHERE user_id = ? AND password = ?";
 
                 try (Connection conn = DBC.connect();
                                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-                        pstmt.setString(1, userid);
+                        pstmt.setString(1, userId);
+                        pstmt.setString(2, userPw);
 
                         try (ResultSet rs = pstmt.executeQuery()) {
                                 if (rs.next()) {
-                                        // 아이디가 존재함 -> 비밀번호 비교
-                                        String dbPw = rs.getString("password");
+                                        // 로그인 성공 User 객체 생성
+                                        user = new User();
 
-                                        if (dbPw.equals(userPw)) {
-                                                return 1; // [성공] 비밀번호 일치
-                                        } else {
-                                                return 0; // [실패] 비밀번호 불일치
+                                        user.setID(rs.getString("user_id"));
+                                        user.setPW(rs.getString("password"));
+                                        user.setName(rs.getString("name"));
+                                        user.setOrganization(rs.getString("organization"));
+
+                                        // DB의 Date 타입 -> 자바의 LocalDate 타입으로 변환
+                                        java.sql.Date dbDate = rs.getDate("birth_date");
+                                        if (dbDate != null) {
+                                                user.setBirthDate(dbDate.toLocalDate());
                                         }
+
+                                        user.setPhoneNumber(rs.getString("phone"));
+                                        user.setEmail(rs.getString("email"));
                                 }
-                                return -1; // [실패] 존재하지 않는 아이디
                         }
                 } catch (Exception e) {
                         e.printStackTrace();
-                        System.out.println("로그인 에러 발생");
+                        System.out.println("로그인 중 DB 오류");
                 }
-                return -2; // [오류] DB 연결 오류 등
+
+                return user; // 실패하면 null 반환
         }
 
         // 회원가입
