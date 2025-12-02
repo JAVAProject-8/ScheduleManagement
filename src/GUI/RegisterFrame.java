@@ -33,25 +33,16 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		topLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 25));
 		topLabel.setBorder(new EmptyBorder(30, 0, 20, 0));
 		
-		// 화면 좌측 구성
-		JLabel IDLabel = new JLabel("ID", JLabel.RIGHT);
-		JLabel PWLabel = new JLabel("PW", JLabel.RIGHT);
-		JLabel PWCheckLabel = new JLabel("재입력", JLabel.RIGHT);
-		JLabel nameLabel = new JLabel("이름", JLabel.RIGHT);
-		JLabel organizationLabel = new JLabel("소속", JLabel.RIGHT);
-		
-		PWStateLabel = new JLabel("", JLabel.LEFT);
-		PWStateLabel.setPreferredSize(new Dimension(105, 20));
-		
-		// 좌측 라벨 판넬
+		// 좌측 라벨 패널
 		JPanel labelsPanel1 = new JPanel();
-		labelsPanel1.setLayout(new GridLayout(5, 1, 0, 5));
-		labelsPanel1.add(IDLabel);
-		labelsPanel1.add(PWLabel);
-		labelsPanel1.add(PWCheckLabel);
-		labelsPanel1.add(nameLabel);
-		labelsPanel1.add(organizationLabel);
+		labelsPanel1.setLayout(new GridLayout(5, 1, 0, 0));
+		labelsPanel1.add(new JLabel("ID", JLabel.RIGHT));
+		labelsPanel1.add(new JLabel("PW", JLabel.RIGHT));
+		labelsPanel1.add(new JLabel("재입력", JLabel.RIGHT));
+		labelsPanel1.add(new JLabel("이름", JLabel.RIGHT));
+		labelsPanel1.add(new JLabel("소속", JLabel.RIGHT));
 		
+		// 아이디 입력 패널
 		IDField = new JTextField(15);
 		duplicationButton = new JButton("중복검사");
 		duplicationButton.setBackground(Color.WHITE);
@@ -62,55 +53,58 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		IDPanel.add(IDField);
 		IDPanel.add(duplicationButton);
 		
+		// 비밀번호 입력 패널
 		PWField = new JPasswordField(15);
 		JPanel PWPanel = new JPanel();
 		PWPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		PWPanel.add(PWField);
 		
 		PWCheckField = new JPasswordField(15);
+		PWStateLabel = new JLabel("", JLabel.LEFT);
+		PWStateLabel.setPreferredSize(new Dimension(105, 20));
+		
+		// 비밀번호 확인 패널
 		JPanel PWCheckPanel = new JPanel();
 		PWCheckPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		PWCheckPanel.add(PWCheckField);
 		PWCheckPanel.add(PWStateLabel);
 		
+		// 이름 입력 패널
 		nameField = new JTextField(15);
 		JPanel namePanel = new JPanel();
 		namePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		namePanel.add(nameField);
 		
+		// 소속 입력 패널
 		organizationField = new JTextField(15);
 		JPanel organizationPanel = new JPanel();
 		organizationPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		organizationPanel.add(organizationField);
 		
-		// 좌측 필드 판넬
+		// 좌측 필드 패널
 		JPanel fieldsPanel1 = new JPanel();
-		fieldsPanel1.setLayout(new GridLayout(5, 1, 0, 5));
+		fieldsPanel1.setLayout(new GridLayout(5, 1, 0, 0));
 		fieldsPanel1.add(IDPanel);
 		fieldsPanel1.add(PWPanel);
 		fieldsPanel1.add(PWCheckPanel);
 		fieldsPanel1.add(namePanel);
 		fieldsPanel1.add(organizationPanel);
 		
-		// 좌측 라벨 + 필드 판넬
+		// 좌측 라벨 + 필드 패널
 		JPanel inputPanel1 = new JPanel();
 		inputPanel1.setLayout(new BorderLayout(5, 5));
-		inputPanel1.add(labelsPanel1, BorderLayout.WEST);	// 두 판넬을 판넬에 나란히 추가
+		inputPanel1.add(labelsPanel1, BorderLayout.WEST);	// 두 패널을 패널에 나란히 추가
 		inputPanel1.add(fieldsPanel1, BorderLayout.EAST);
 		inputPanel1.setBorder(new EmptyBorder(0, 0, 0, 10));
 		
-		// 화면 우측 구성
-		JLabel birthDateLabel = new JLabel("생년월일", JLabel.RIGHT);
-		JLabel phoneNumberLabel = new JLabel("전화번호", JLabel.RIGHT);
-		JLabel emailLabel = new JLabel("이메일", JLabel.RIGHT);
-		
-		// 좌측 라벨 판넬
+		// 좌측 라벨 패널
 		JPanel labelsPanel2 = new JPanel();
-		labelsPanel2.setLayout(new GridLayout(5, 1, 0, 5));
-		labelsPanel2.add(birthDateLabel);
-		labelsPanel2.add(phoneNumberLabel);
-		labelsPanel2.add(emailLabel);
+		labelsPanel2.setLayout(new GridLayout(5, 1, 0, 0));
+		labelsPanel2.add(new JLabel("생년월일", JLabel.RIGHT));
+		labelsPanel2.add(new JLabel("전화번호", JLabel.RIGHT));
+		labelsPanel2.add(new JLabel("이메일", JLabel.RIGHT));
 		
+		// 생일 입력 패널
 		birthYearField = new JTextField(4);
 		birthMonthField = new JTextField(2);
 		birthDateField = new JTextField(2);
@@ -124,6 +118,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		birthPanel.add(birthDateField);
 		birthPanel.add(new JLabel("일"));
 		
+		// 전화번호 입력 패널
 		phoneNumberField1 = new JTextField(3);
 		phoneNumberField2 = new JTextField(4);
 		phoneNumberField3 = new JTextField(4);
@@ -136,6 +131,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		phoneNumberPanel.add(new JLabel("-"));
 		phoneNumberPanel.add(phoneNumberField3);
 		
+		// 이메일 입력 패널
 		emailLocalField = new JTextField(10);
 		emailDomainField = new JTextField(10);
 		emailDomainField.setEditable(false);
@@ -156,6 +152,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		emailPanel.add(emailDomainField);
 		emailPanel.add(emailComboBox);
 		
+		// 버튼 패널
 		checkButton = new JButton("확인");
 		checkButton.setBackground(Color.WHITE);
 		checkButton.setFocusPainted(false);
@@ -163,22 +160,22 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(checkButton);
 		
-		// 좌측 필드 판넬
+		// 좌측 필드 패널
 		JPanel fieldsPanel2 = new JPanel();
-		fieldsPanel2.setLayout(new GridLayout(5, 1, 0, 5));
+		fieldsPanel2.setLayout(new GridLayout(5, 1, 0, 0));
 		fieldsPanel2.add(birthPanel);
 		fieldsPanel2.add(phoneNumberPanel);
 		fieldsPanel2.add(emailPanel);
 		fieldsPanel2.add(new JLabel(""));
 		fieldsPanel2.add(buttonPanel);
 		
-		// 우측 라벨 + 필드 판넬
+		// 우측 라벨 + 필드 패널
 		JPanel inputPanel2 = new JPanel();
 		inputPanel2.setLayout(new BorderLayout(5, 5));
-		inputPanel2.add(labelsPanel2, BorderLayout.WEST);	// 두 판넬을 판넬에 나란히 추가
+		inputPanel2.add(labelsPanel2, BorderLayout.WEST);	// 두 패널을 패널에 나란히 추가
 		inputPanel2.add(fieldsPanel2, BorderLayout.EAST);
 		
-		// 메인 판넬
+		// 메인 패널
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(inputPanel1, BorderLayout.WEST);
@@ -346,6 +343,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 			}
 			
 			// DB에 회원 정보를 전달, 성공 여부 반환
+			// 회원 객체를 전달해야 함
 			boolean result = true;
 			
 			if(result) {
