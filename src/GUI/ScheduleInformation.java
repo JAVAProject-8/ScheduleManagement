@@ -12,7 +12,6 @@ public class ScheduleInformation {
 			e.printStackTrace();
 		}
 		
-		new LoginFrame();
-		//new MainFrame();
+		new LoginFrame();	// 로그인 프레임 실행
 	}
 }
