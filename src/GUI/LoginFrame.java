@@ -28,7 +28,6 @@ public class LoginFrame extends JFrame implements ActionListener {
 		labelsPanel.setLayout(new GridLayout(2, 1, 0, 5));
 		labelsPanel.add(IDLabel);	// 두 레이블을 2*1 판넬에 추가
 		labelsPanel.add(PWLabel);
-		//labelsPanel.setBorder(new EmptyBorder(0, 20, 0, 0));
 		
 		IDField = new JTextField(15);
 		PWField = new JPasswordField(15);
@@ -49,7 +48,6 @@ public class LoginFrame extends JFrame implements ActionListener {
 		loginButton.setPreferredSize(new Dimension(80, 40));	// 버튼 크기
 		loginButton.setBackground(Color.WHITE);	// 버튼 배경색
 		loginButton.setFocusPainted(false);	// 버튼 선택 시 텍스트 주변 네모박스
-		//loginButton.setOpaque(true);
 		
 		registerButton = new JButton("회원가입");
 		registerButton.setPreferredSize(new Dimension(130, 40));
@@ -104,7 +102,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 			if(user != null) {
 				JOptionPane.showMessageDialog(null, "로그인 성공", "Information", JOptionPane.PLAIN_MESSAGE);
 				dispose();
-				new MainFrame(user);
+				//new MainFrame(user);
 			}
 			// 로그인 실패 시 안내 메시지 출력 후 재입력 요청
 			else {
