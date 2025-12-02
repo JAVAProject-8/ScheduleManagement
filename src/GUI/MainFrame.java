@@ -10,17 +10,15 @@ import javax.swing.border.EmptyBorder;
 import java.util.Random;
 
 public class MainFrame extends JFrame implements ActionListener {
-	User user;
+	User user = null;
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
 	
-	public MainFrame() {
-	//public MainFrame(User _u) {
+	public MainFrame(User _u) {
 		Container ct = getContentPane();
-		//user = _u;	// 현재 로그인 한 사용자를 식별하기 위한 객체 저장
+		user = _u;	// 현재 로그인 한 사용자를 식별하기 위한 객체 저장
 		
 		// 메뉴 바 설정
 		JMenuBar menuBar = new JMenuBar();
-		//menuBar.setBackground(Color.WHITE);
 		setJMenuBar(menuBar);
 		
 		// 메뉴 설정
@@ -76,9 +74,9 @@ public class MainFrame extends JFrame implements ActionListener {
 		exitMenuItem.addActionListener(this);
 		
 		setTitle("일정 관리 프로그램");
-		//pack();
-		setSize(500, 500);
-		setResizable(false);	// 크기 조정
+		pack();
+		//setSize(500, 500);
+		//setResizable(false);	// 크기 조정
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
 		setVisible(true);
@@ -106,14 +104,14 @@ public class MainFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// 초대 코드를 생성
+			// 초대 코드를 생성(여기서 할 필요 없음)
 			Random random = new Random();
 			String characterSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 			String inviteCode = "";
 			for(int i = 0; i < 10; i++) {
 				inviteCode += characterSet.charAt(random.nextInt(characterSet.length()));
 			}
-			//JOptionPane.showMessageDialog(null, inviteCode);
+			JOptionPane.showMessageDialog(null, inviteCode);
 			
 			// 그룹 아이디와 그룹 명, 초대 코드를 DB에 전달
 			// 그룹 아이디가 중복될 경우 생성 불가, 재입력 필요
@@ -139,7 +137,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			// DB의 그룹원 테이블에서 해당 사용자를 삭제 처리
 		}
 		else if(command.equals("사용자 정보 관리")) {
-			new EditUserInfoDialog(this, "사용자 정보 관리");
+			new EditUserInfoDialog(this, "사용자 정보 관리", user);	// 현재 User 객체를 전달
 		}
 		else if(command.equals("프로그램 종료")) {
 			// YES == 0, NO == 1, 팝업 끄기 == -1
