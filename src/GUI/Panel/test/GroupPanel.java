@@ -81,6 +81,8 @@ public class GroupPanel extends JPanel {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
         }
 
+        // 테이블 셀 크기
+        table.setRowHeight(30);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -159,7 +161,7 @@ public class GroupPanel extends JPanel {
             model.setValueAt(schedule, row, col);
         }
     }
-    // TODO : 그룹원 별 색상 구분
+    // TODO : 한 그룹에서 그룹원 별로 색상 구분한다.
     /** 그룹원마다 고유 색상 부여 */
     private void assignMemberColors(List<Schedule> list) {
         memberColorMap.clear();
@@ -198,6 +200,7 @@ public class GroupPanel extends JPanel {
         return dow.getValue();
     }
 
+    // TODO : 한 그룹에서 그룹원 별로 색상 구분한다.
     // 일정 색상 렌더러
     private class GroupScheduleRenderer extends DefaultTableCellRenderer {
         @Override

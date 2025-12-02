@@ -62,7 +62,8 @@ public class TimetablePanel extends JPanel {
         for (int col = 1; col <= 7; col++) {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
         }
-
+        // 테이블 셀 크기
+        table.setRowHeight(30);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -152,7 +153,7 @@ public class TimetablePanel extends JPanel {
         }
     }
 
-    /** 일정 ID 기반 해시 색상 생성 */
+    /** 해시 색상 생성 */
     // 렌덤으로 0 ~ 255 
     private Color getColorForSchedule(int rd) {
         int r = (rd * 37) % 200 + 30;
