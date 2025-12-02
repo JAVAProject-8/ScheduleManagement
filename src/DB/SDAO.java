@@ -62,7 +62,7 @@ public class SDAO {
     // 매개변수: (User 객체)
     // 반환값: true(성공), false(실패)
     public boolean registerUser(User user) {
-        String sql = "INSERT INTO User (user_id, pw, name, organization, birth_date, phone_number, email) "
+        String sql = "INSERT INTO users (user_id, password, name, organization, birth_date, phone_number, email) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBC.connect();
@@ -93,12 +93,64 @@ public class SDAO {
         }
     }
 
+    // 기능: 사용자 정보 수정
+    // 매개변수: 수정할 정보가 담긴 User 객체 (ID는 WHERE 조건으로 사용)
+    // 반환값: true(성공), false(실패)
+    public boolean updateUserInfo(User user) {
+        // user_id는 PK이므로 수정하지 않고 식별자로 사용합니다.
+        // phone 컬럼명 주의 (DB는 phone, 자바 객체는 phoneNumber)
+        String sql = "UPDATE users SET "
+                + "password = ?, "
+                + "name = ?, "
+                + "organization = ?, "
+                + "birth_date = ?, "
+                + "phone = ?, "
+                + "email = ? "
+                + "WHERE user_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // 1. 비밀번호
+            pstmt.setString(1, user.getPW());
+            // 2. 이름
+            pstmt.setString(2, user.getName());
+            // 3. 소속
+            pstmt.setString(3, user.getOrganization());
+
+            // 4. 생년월일 (LocalDate -> java.sql.Date 변환)
+            if (user.getBirthDate() != null) {
+                pstmt.setDate(4, java.sql.Date.valueOf(user.getBirthDate()));
+            } else {
+                pstmt.setNull(4, java.sql.Types.DATE);
+            }
+
+            // 5. 전화번호
+            pstmt.setString(5, user.getPhoneNumber());
+            // 6. 이메일
+            pstmt.setString(6, user.getEmail());
+
+            // 7. WHERE 조건 (유저 아이디)
+            pstmt.setString(7, user.getID());
+
+            int result = pstmt.executeUpdate();
+
+            // 1행 이상 수정되었다면 성공
+            return result > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("회원 정보 수정 실패: " + e.getMessage());
+            return false;
+        }
+    }
+
     // 아이디 중복 검사: DB에 ID를 조회하여 중복 여부를 검사
     // 매개변수: (유저ID)
-    // 반환값: true(중복 없음), false(중복)
+    // 반환값: true(중복), false(중복 없음)
     public boolean checkIdDuplicate(String userId) {
         boolean isDuplicate = false;
-        String sql = "SELECT 1 FROM User WHERE user_id = ?"; // 1만 가져와서 존재 여부만 확인
+        String sql = "SELECT 1 FROM users WHERE user_id = ?"; // 1만 가져와서 존재 여부만 확인
 
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -127,8 +179,7 @@ public class SDAO {
 
         // 오늘 날짜에 포함되는 일정 조회
         String sql = "SELECT schedule_id, writer_id, group_id, schedule_name, schedule_type, "
-                + "DATE_FORMAT(start_at, '%Y-%m-%d %H:%i') as start_str, "
-                + "DATE_FORMAT(end_at, '%Y-%m-%d %H:%i') as end_str "
+                + "start_at, end_at "
                 + "FROM schedules "
                 + "WHERE writer_id = ? "
                 + "ORDER BY start_at ASC";
@@ -146,8 +197,12 @@ public class SDAO {
                     int gid = rs.getInt("group_id");
                     String name = rs.getString("schedule_name");
                     String type = rs.getString("schedule_type");
-                    String start = rs.getString("start_str");
-                    String end = rs.getString("end_str");
+                    java.sql.Timestamp startTs = rs.getTimestamp("start_at");
+                    java.sql.Timestamp endTs = rs.getTimestamp("end_at");
+
+                    // Timestamp를 LocalDateTime으로 변환
+                    java.time.LocalDateTime start = (startTs != null) ? startTs.toLocalDateTime() : null;
+                    java.time.LocalDateTime end = (endTs != null) ? endTs.toLocalDateTime() : null;
 
                     list.add(new Schedule(id, wId, gid, name, type, start, end));
                 }
@@ -194,13 +249,19 @@ public class SDAO {
             // 일정 종류
             pstmt.setString(4, dto.getScheduleType());
 
-            // 시작 시간
-            pstmt.setString(5, dto.getStartAt());
+            // 시작 시간, Timestamp로 변환
+            if (dto.getStartAt() != null)
+                pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getStartAt()));
+            else
+                pstmt.setTimestamp(5, null);
 
-            // 종료 시간
-            pstmt.setString(6, dto.getEndAt());
+            // 종료 시간, Timestamp로 변환
+            if (dto.getEndAt() != null)
+                pstmt.setTimestamp(6, java.sql.Timestamp.valueOf(dto.getEndAt()));
+            else
+                pstmt.setTimestamp(6, null);
 
-            // 실행
+            // 적용
             int count = pstmt.executeUpdate();
             if (count > 0) {
                 result = true;
@@ -220,7 +281,44 @@ public class SDAO {
         }
         return result;
     }
+    // 기능: 기존 일정 정보를 수정한다
+    // 매개변수: 수정된 내용이 담긴 Schedule 객체
+    // 반환값: boolean(성공 true, 실패 false)
+    public boolean updateSchedule(Schedule dto) {
+    	boolean result = false;
+    	
+    	String sql = "UPDATE schedules SET group_id = ?, schedule_name = ?, schedule_type = ?, start_at = ?, end_at = ? " + "WHERE schedule_id = ?";
+    	
+    	try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)){
+    		
+    		if(dto.getGroupId() == 0) {
+    			pstmt.setNull(1, java.sql.Types.INTEGER);
+    		}else {
+    			pstmt.setInt(1, dto.getGroupId());
+    		}
+    		
+    		pstmt.setString(2, dto.getScheduleName());
+    		pstmt.setString(2, dto.getScheduleName());
+            pstmt.setString(3, dto.getScheduleType());
+            pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
+            pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
+            
+            pstmt.setInt(6, dto.getScheduleId());
+            
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                result = true;
+                System.out.println("일정 수정 성공 (ID: " + dto.getScheduleId() + ")");
+            }
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("일정 수정 실패");
+        }
+        
+        return result;
+    }
     // 기능: 전달받은 유저ID를 DB에 조회하여 소속 그룹을 리스트로 반환한다
     // 매개변수: (유저ID)
     // 반환값: Group 리스트
@@ -229,7 +327,7 @@ public class SDAO {
 
         String sql = "SELECT g.group_id, g.group_name, g.invite_code "
                 + "FROM user_groups g "
-                + "JOIN Member m ON g.group_id = m.group_id "
+                + "JOIN group_members m ON g.group_id = m.group_id "
                 + "WHERE m.user_id = ? "
                 + "ORDER BY g.group_id ASC";
 
@@ -333,7 +431,7 @@ public class SDAO {
         // 해당 그룹의 메모 불러오기
         String sql = "SELECT memo_id, group_id, writer_id, content, "
                 + "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_str "
-                + "FROM memos "
+                + "FROM memoes "
                 + "WHERE group_id = ? "
                 + "ORDER BY created_at DESC";
 
@@ -519,7 +617,7 @@ public class SDAO {
 
     // 기능: 업무 갱신
     // 매개변수: 대상 멤버ID, 그룹 ID, 변경할 업무 내용
-    // 반환값: boolean(성공 시 true, 실패 시 false)	
+    // 반환값: boolean(성공 시 true, 실패 시 false)
     public boolean updateTask(String userId, int groupId, String task) {
         String sql = "UPDATE group_members SET task = ? WHERE user_id = ? AND group_id = ?";
 

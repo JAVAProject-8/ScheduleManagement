@@ -1,21 +1,27 @@
 package DB;
 
+import java.time.LocalDateTime;
+
 // 일정 객체
 public class Schedule {
-    
-    private int scheduleId; // 일정 id
-    
-    private String writerId; // 사용자 id
+ 
 
-    private int groupId;	    // 그룹 id
-    
-    private String scheduleName; // 일정 이름
-    
-    private String scheduleType; // 일정 종류
-    
-    private String startAt; // 시작 날짜 + 시간     // "2025-11-29 10:00"
+    private int scheduleId;      // 일정 id
 
-    private String endAt;  // 마감 날짜 + 시간 	    // "2025-11-29 12:00"
+    private String writerId;     // 사용자 id
+
+    private int groupId;  	     // 그룹 id
+
+    private String scheduleName;     // 일정 이름
+
+    private String scheduleType;     // 일정 종류
+
+
+    private LocalDateTime startAt;     // 시작 날짜 + 시간 "2025-11-29 10:00"	
+    
+
+    private LocalDateTime endAt;   // 마감 날짜 + 시간 "2025-11-29 12:00"
+
 
     // 일정 객체 생성자
     /**
@@ -29,7 +35,7 @@ public class Schedule {
      * @param startAt  시작 날짜 + 시간
      * @param endAt    마감 날짜 + 시간
      */
-    public Schedule(int id, String writerId, int groupId, String name, String type, String startAt, String endAt) {
+    public Schedule(int id, String writerId, int groupId, String name, String type, LocalDateTime startAt, LocalDateTime endAt) {
         this.scheduleId = id;
         this.writerId = writerId;
         this.groupId = groupId;
@@ -63,13 +69,15 @@ public class Schedule {
         return scheduleType;
     }
 
-
-    public String getStartAt() {     // 시작 날짜 + 시간 리턴
+ 
+    // 시작 날짜 + 시간 리턴
+    public LocalDateTime getStartAt() {
         return startAt;
     }
 
+    // 마감 날짜 + 시간 리턴
+    public LocalDateTime getEndAt() {
 
-    public String getEndAt() {     // 마감 날짜 + 시간 리턴
         return endAt;
     }
 
