@@ -4,6 +4,37 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class SDAO {
+	
+	
+		public int login(String userid, String userPw) {
+			String sql = "SELECT password FROM users WHERE user_id = ?";
+			
+			try (Connection conn = DBC.connect();
+		             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+		            
+		            
+		            pstmt.setString(1, userid);
+		            
+		            
+		            try (ResultSet rs = pstmt.executeQuery()) {
+		                if (rs.next()) {
+		                    // 아이디가 존재함 -> 비밀번호 비교
+		                    String dbPw = rs.getString("password");
+		                    
+		                    if (dbPw.equals(userPw)) {
+		                        return 1; // [성공] 비밀번호 일치
+		                    } else {
+		                        return 0; // [실패] 비밀번호 불일치
+		                    }
+		                }
+		                return -1; // [실패] 존재하지 않는 아이디
+		            }
+		        } catch (Exception e) {
+		            e.printStackTrace();
+		            System.out.println("로그인 에러 발생");
+		        }
+		        return -2; // [오류] DB 연결 오류 등
+		}
         // 오늘의 일정을 리스트로 리턴
         public ArrayList<Schedule> getTodaySchedules(String userId) {
                 ArrayList<Schedule> list = new ArrayList<>();
