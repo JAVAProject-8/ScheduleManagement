@@ -7,14 +7,14 @@ CREATE TABLE users (
     phone varchar(15) NOT NULL,
     email varchar(100) NOT NULL,
     PRIMARY KEY (user_id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE user_groups (
     group_id varchar(20) NOT NULL,
     group_name varchar(20) DEFAULT NULL,
     invite_code char(6) DEFAULT NULL,
     PRIMARY KEY (group_id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE group_members (
     user_id varchar(20) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE group_members (
     KEY fk_group_members_groups (group_id),
     CONSTRAINT fk_group_members_groups FOREIGN KEY (group_id) REFERENCES user_groups (group_id) ON DELETE CASCADE,
     CONSTRAINT fk_group_members_users FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE schedules (
     schedule_id int NOT NULL AUTO_INCREMENT,
@@ -40,7 +40,7 @@ CREATE TABLE schedules (
     KEY fk_schedules_groups (group_id),
     CONSTRAINT fk_schedules_groups FOREIGN KEY (group_id) REFERENCES user_groups (group_id) ON DELETE CASCADE,
     CONSTRAINT fk_schedules_users FOREIGN KEY (writer_id) REFERENCES users (user_id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE memoes (
     memo_id int NOT NULL AUTO_INCREMENT,
@@ -53,4 +53,4 @@ CREATE TABLE memoes (
     KEY fk_memoes_users (writer_id),
     CONSTRAINT fk_memoes_groups FOREIGN KEY (group_id) REFERENCES user_groups (group_id) ON DELETE CASCADE,
     CONSTRAINT fk_memoes_users FOREIGN KEY (writer_id) REFERENCES users (user_id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

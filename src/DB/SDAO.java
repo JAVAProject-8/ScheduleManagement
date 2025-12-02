@@ -281,31 +281,38 @@ public class SDAO {
         }
         return result;
     }
+
     // 기능: 기존 일정 정보를 수정한다
     // 매개변수: 수정된 내용이 담긴 Schedule 객체
-    // 반환값: boolean(성공 true, 실패 false)
+    // 반환값: true(성공), false(실패)
     public boolean updateSchedule(Schedule dto) {
-    	boolean result = false;
-    	
-    	String sql = "UPDATE schedules SET group_id = ?, schedule_name = ?, schedule_type = ?, start_at = ?, end_at = ? " + "WHERE schedule_id = ?";
-    	
-    	try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)){
-    		
-    		if(dto.getGroupId() == 0) {
-    			pstmt.setNull(1, java.sql.Types.INTEGER);
-    		}else {
-    			pstmt.setInt(1, dto.getGroupId());
-    		}
-    		
-    		pstmt.setString(2, dto.getScheduleName());
-    		pstmt.setString(2, dto.getScheduleName());
+        boolean result = false;
+
+        String sql = "UPDATE schedules SET "
+                + "group_id = ?, "
+                + "schedule_name = ?, "
+                + "schedule_type = ?, "
+                + "start_at = ?, "
+                + "end_at = ? "
+                + "WHERE schedule_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (dto.getGroupId() == 0) {
+                pstmt.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                pstmt.setInt(1, dto.getGroupId());
+            }
+
+            pstmt.setString(2, dto.getScheduleName());
+            pstmt.setString(2, dto.getScheduleName());
             pstmt.setString(3, dto.getScheduleType());
             pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
             pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
-            
+
             pstmt.setInt(6, dto.getScheduleId());
-            
+
             int count = pstmt.executeUpdate();
             if (count > 0) {
                 result = true;
@@ -316,9 +323,10 @@ public class SDAO {
             e.printStackTrace();
             System.out.println("일정 수정 실패");
         }
-        
+
         return result;
     }
+
     // 기능: 전달받은 유저ID를 DB에 조회하여 소속 그룹을 리스트로 반환한다
     // 매개변수: (유저ID)
     // 반환값: Group 리스트
