@@ -1,6 +1,7 @@
 package GUI;
 
 import DB.SDAO;
+import DB.User;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -265,9 +266,9 @@ public class RegisterFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			boolean result = true; // 중복 검사를 위한 DB 조회 후 결과 반환
+			boolean result = SDAO.getInstance().checkIdDuplicate(ID); // 중복 검사를 위해 ID를 인수로 DAO 객체에서 조회 결과 반환
 			
-			if(result) {
+			if(!result) {	// 중복되는 아이디가 없을 시(결과가 false)
 				JOptionPane.showMessageDialog(null, "중복되지 않은 아이디입니다.", "Information", JOptionPane.PLAIN_MESSAGE);
 				duplicationButton.setEnabled(false);	// 버튼 비활성화
 				duplicationButton.setText("완료");
@@ -303,10 +304,10 @@ public class RegisterFrame extends JFrame implements ActionListener {
 			String PW = new String(PWField.getPassword());
 			String name = nameField.getText().trim();
 			String organization = organizationField.getText().trim();
-			
+			LocalDate birthDate = null;
 			// parseInt 메소드 예외 처리
 			try {
-				LocalDate birthDate = LocalDate.of(Integer.parseInt(birthYearField.getText().trim()), Integer.parseInt(birthMonthField.getText().trim()), Integer.parseInt(birthDateField.getText().trim()));
+				birthDate = LocalDate.of(Integer.parseInt(birthYearField.getText().trim()), Integer.parseInt(birthMonthField.getText().trim()), Integer.parseInt(birthDateField.getText().trim()));
 			}
 			catch(NumberFormatException exception) {
 				JOptionPane.showMessageDialog(null, "생년월일을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -342,9 +343,17 @@ public class RegisterFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// DB에 회원 정보를 전달, 성공 여부 반환
-			// 회원 객체를 전달해야 함
-			boolean result = true;
+			// 로그인 시도 User 객체 생성
+			User loginUser = new User();
+			loginUser.setID(ID);
+			loginUser.setPW(PW);
+			loginUser.setName(name);
+			loginUser.setOrganization(organization);
+			loginUser.setBirthDate(birthDate);
+			loginUser.setPhoneNumber(phoneNumber);
+			loginUser.setEmail(email);
+			
+			boolean result = SDAO.getInstance().registerUser(loginUser);	// 회원가입을 위해 User 객체를 인수로 DAO 객체에서 성공 여부 반환
 			
 			if(result) {
 				// 회원가입 성공 시 현재 GUI를 닫고 로그인 GUI로 이동
