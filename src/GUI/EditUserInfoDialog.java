@@ -1,10 +1,14 @@
 package GUI;
 
+import DB.SDAO;
+import DB.User;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.border.EmptyBorder;
+import java.util.StringTokenizer;
 
 public class EditUserInfoDialog extends JDialog implements ActionListener {
 	JTextField IDField, nameField, organizationField; // 아이디, 이름, 소속
@@ -16,10 +20,15 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 	JLabel PWStateLabel;	// 비밀번호 일치 여부 확인 라벨
 	JButton checkButton;	// 확인 버튼
 	
-	// 자동 완성을 위해 생성자(메인 프레임에 위치)에서 현재 User 객체를 전달받아야 함
+	MainFrame mainFrame = null;
+	User user = null;
+	StringTokenizer st = null;
 	
-	public EditUserInfoDialog(JFrame frame, String title) {
+	// 생성자(자동 완성을 위해 현재 로그인 한 User 객체를 전달받아야 함
+	public EditUserInfoDialog(MainFrame frame, String title, User _u) {
 		super(frame, title, true);
+		user = _u;
+		mainFrame = frame;
 		
 		setLayout(new BorderLayout());
 		
@@ -161,34 +170,7 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 		add(inputPanel1, BorderLayout.WEST);
 		add(inputPanel2, BorderLayout.EAST);
 		
-		// 수정 불가능 항목 기본 정보 설정
-		IDField.setEditable(false);
-		IDField.setBackground(Color.WHITE);
-		IDField.setText("");
-		
-		nameField.setEditable(false);
-		nameField.setBackground(Color.WHITE);
-		nameField.setText("");
-		
-		birthYearField.setEditable(false);
-		birthYearField.setBackground(Color.WHITE);
-		birthYearField.setText("");
-		
-		birthMonthField.setEditable(false);
-		birthMonthField.setBackground(Color.WHITE);
-		birthMonthField.setText("");
-		
-		birthDateField.setEditable(false);
-		birthDateField.setBackground(Color.WHITE);
-		birthDateField.setText("");
-		
-		// 수정 가능 항목 기본 정보 설정
-		organizationField.setText("");
-		phoneNumberField1.setText("");
-		phoneNumberField2.setText("");
-		phoneNumberField3.setText("");
-		emailLocalField.setText("");
-		emailDomainField.setText("");
+		setDefaultValue();	// 기본값 설정
 		
 		// ActionListener 등록
 		emailComboBox.addActionListener(this);
@@ -247,8 +229,86 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 		}
 		// 확인 버튼 선택 시
 		else if(obj == checkButton) {
-			// 회원가입과 동일
-			// 대신 갱신 후 User 객체 업데이트가 필요
+			// 필요 정보를 저장
+			String PW = new String(PWField.getPassword());
+			String organization = organizationField.getText().trim();
+			String phoneNumber = phoneNumberField1.getText().trim() + phoneNumberField2.getText().trim() + phoneNumberField3.getText().trim();
+			String email = emailLocalField.getText().trim() + "@" + emailDomainField.getText().trim();
+			
+			// 공백 검사 후 팝업 출력
+			if(PW.equals("")) {
+				JOptionPane.showMessageDialog(null, "비밀번호를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			else if(organization.equals("")) {
+				JOptionPane.showMessageDialog(null, "소속을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			else if(phoneNumber.length() != 11) {	// 정상적으로 입력된 전화번호는 11자리임
+				JOptionPane.showMessageDialog(null, "전화번호를 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			else if(email.charAt(0) == '@') {
+				JOptionPane.showMessageDialog(null, "이메일을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			User editUser = new User();
+			editUser.setID(user.getID());
+			editUser.setPW(PW);
+			editUser.setName(user.getName());
+			editUser.setOrganization(organization);
+			editUser.setBirthDate(user.getBirthDate());
+			editUser.setPhoneNumber(phoneNumber);
+			editUser.setEmail(email);
+			
+			boolean result = SDAO.getInstance().updateUserInfo(editUser);	// 정보 수정을 위해 User 객체를 인수로 DAO 객체에서 성공 여부 반환
+			
+			// 회원 정보 수정 성공 시
+			if(result) {
+				JOptionPane.showMessageDialog(null, "사용자 정보 수정 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				dispose();	// 프레임 종료
+				mainFrame.user = editUser;	// MainFrame에 위치한 User 객체를 업데이트
+			}
+			// 회원 정보 수정 실패 시
+			else {
+				// 알수 없는 이유로 정보 수정 실패 시 재시도 요청
+				JOptionPane.showMessageDialog(null, "알 수 없는 이유로 사용자 정보 수정에 실패했습니다. 다시 시도해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 		}
+	}
+	
+	// 기본값 설정 메소드
+	public void setDefaultValue() {
+		// 수정 불가능 항목 기본 정보 설정
+		IDField.setEditable(false);
+		IDField.setBackground(Color.WHITE);
+		IDField.setText(user.getID());
+		
+		nameField.setEditable(false);
+		nameField.setBackground(Color.WHITE);
+		nameField.setText(user.getName());
+		
+		birthYearField.setEditable(false);
+		birthYearField.setBackground(Color.WHITE);
+		birthYearField.setText(Integer.toString(user.getBirthDate().getYear()));
+		
+		birthMonthField.setEditable(false);
+		birthMonthField.setBackground(Color.WHITE);
+		birthMonthField.setText(Integer.toString(user.getBirthDate().getMonthValue()));
+		
+		birthDateField.setEditable(false);
+		birthDateField.setBackground(Color.WHITE);
+		birthDateField.setText(Integer.toString(user.getBirthDate().getDayOfMonth()));
+		
+		// 수정 가능 항목 기본 정보 설정
+		organizationField.setText(user.getOrganization());
+		phoneNumberField1.setText(user.getPhoneNumber().substring(0, 3));
+		phoneNumberField2.setText(user.getPhoneNumber().substring(3, 7));
+		phoneNumberField3.setText(user.getPhoneNumber().substring(7));
+		
+		st = new StringTokenizer(user.getEmail(), "@");
+		emailLocalField.setText(st.nextToken());
+		emailDomainField.setText(st.nextToken());
 	}
 }
