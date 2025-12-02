@@ -367,8 +367,8 @@ public class SDAO {
     }
 
     // 기능: 그룹 생성하고 생성자를 관리자로 등록함 초대코드도 자동으로 생성
-    // 매개변수: String groupName, String writerId
-    // 반환값: boolean(true, false))
+    // 매개변수: 그룹 이름, 생성자 ID
+    // 반환값: boolean(성공 true, 실패 false))
     boolean createGroup(String groupName, String writerId) {
         Connection conn = null;
         PreparedStatement pstmtGroup = null;
@@ -445,7 +445,7 @@ public class SDAO {
     }
 
     // 기능: 초대 코드를 이용해 그룹 가입
-    // 매개변수: String userId, String inviteCode
+    // 매개변수: 가입할 아이디, 초대코드
     // 반환값: int
     // 1 = 성공 || 0 = 초대코드 오류 || -1 = 이미 가입됨/DB오류
     public int joinGroup(String userId, String inviteCode) {
@@ -518,8 +518,8 @@ public class SDAO {
     }
 
     // 기능: 업무 갱신
-    // 매개변수: String userId, int groupId, String task
-    // 반환값: boolean(true, false)
+    // 매개변수: 대상 멤버ID, 그룹 ID, 변경할 업무 내용
+    // 반환값: boolean(성공 시 true, 실패 시 false)	
     public boolean updateTask(String userId, int groupId, String task) {
         String sql = "UPDATE group_members SET task = ? WHERE user_id = ? AND group_id = ?";
 
@@ -541,7 +541,7 @@ public class SDAO {
     }
 
     // 기능: 중복되지 않는 6자리 랜덤 초대 코드를 생섬
-    // 매개변수: Connection conn
+    // 매개변수: DB연결객체
     // 반환값: String(생성된 초대코드)
     private String generateInviteCode(Connection conn) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
