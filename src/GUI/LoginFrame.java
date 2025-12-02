@@ -69,6 +69,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		ct.add(mainPanel, BorderLayout.CENTER);
 		ct.add(bottomPanel, BorderLayout.SOUTH);
 		
+		PWField.addActionListener(this);
 		loginButton.addActionListener(this);
 		registerButton.addActionListener(this);
 		
@@ -84,7 +85,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		Object obj = e.getSource();
 		
 		// 로그인 버튼 클릭
-		if(obj == loginButton) {
+		if(obj == loginButton || obj == PWField) {
 			// ID PW를 가져옴
 			String ID = IDField.getText().trim();
 			String PW = new String(PWField.getPassword());
@@ -95,14 +96,13 @@ public class LoginFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// DAO 객체 참조, DB 조회, 결과 반환
-			User user = null;
+			User user = SDAO.getInstance().loginGetUser(ID, PW);	// 아이디와 비밀번호를 인수로 DAO 객체에서 User 객체 반환
 			
-			// 로그인 성공 시 안내 메시지 출력 후 메인 화면으로 이동
+			// 로그인 성공 시(반환값이 null이 아닐 시) 안내 메시지 출력 후 메인 화면으로 이동
 			if(user != null) {
 				JOptionPane.showMessageDialog(null, "로그인 성공", "Information", JOptionPane.PLAIN_MESSAGE);
 				dispose();
-				//new MainFrame(user);
+				new MainFrame(user);	// 로그인에 성공한 User 객체를 전달
 			}
 			// 로그인 실패 시 안내 메시지 출력 후 재입력 요청
 			else {
