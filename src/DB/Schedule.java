@@ -1,5 +1,7 @@
 package DB;
 
+import java.time.LocalDateTime;
+
 // 일정 객체
 public class Schedule {
     // 일정 id
@@ -14,10 +16,10 @@ public class Schedule {
     private String scheduleType;
     // 시작 날짜 + 시간
     // "2025-11-29 10:00"
-    private String startAt;
+    private LocalDateTime startAt;
     // 마감 날짜 + 시간
     // "2025-11-29 12:00"
-    private String endAt;
+    private LocalDateTime endAt;
 
     // 일정 객체 생성자
     /**
@@ -31,7 +33,7 @@ public class Schedule {
      * @param startAt  시작 날짜 + 시간
      * @param endAt    마감 날짜 + 시간
      */
-    public Schedule(int id, String writerId, int groupId, String name, String type, String startAt, String endAt) {
+    public Schedule(int id, String writerId, int groupId, String name, String type, LocalDateTime startAt, LocalDateTime endAt) {
         this.scheduleId = id;
         this.writerId = writerId;
         this.groupId = groupId;
@@ -67,12 +69,12 @@ public class Schedule {
     }
 
     // 시작 날짜 + 시간 리턴
-    public String getStartAt() {
+    public LocalDateTime getStartAt() {
         return startAt;
     }
 
     // 마감 날짜 + 시간 리턴
-    public String getEndAt() {
+    public LocalDateTime getEndAt() {
         return endAt;
     }
 
