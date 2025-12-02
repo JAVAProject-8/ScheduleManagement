@@ -20,6 +20,17 @@ public class Schedule {
     private String endAt;
     
     // 일정 객체 생성자
+    /**
+     * 일정 객체 생성자
+     * 
+     * @param id       일정 id
+     * @param writerId 사용자 id
+     * @param groupId  그룹 id
+     * @param name     일정 이름
+     * @param type     일정 종류
+     * @param startAt  시작 날짜 + 시간
+     * @param endAt    마감 날짜 + 시간
+     */
     public Schedule(int id, String writerId, int groupId, String name, String type, String startAt, String endAt) {
         this.scheduleId = id;
         this.writerId = writerId;

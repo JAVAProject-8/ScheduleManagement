@@ -8,18 +8,26 @@ import GUI.Panel.MainPanel;
 // 패널들 테스트용 프래임
 public class GUITest {
     public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());	// Java 기본 Look And Feel 설정
+            
+        }
+        catch(Exception e) {}
+
         // 테스트 GUId을 선언
         new TestFrame();
     }
 }
 
 class TestFrame extends JFrame {
-    private SDAO sdao = new SDAO();
+    // private SDAO sdao = new SDAO();
     // 구현 완료
-    private MainPanel p = new MainPanel("id1", sdao);
+    // private MainPanel p = new MainPanel("id1", sdao);
     // private TimetablePanel p = new TimetablePanel();
+    // private TimetablePanelT p = new TimetablePanelT("id1");
     
     // private GroupPanel p = new GroupPanel();
+    private GroupPanelT p = new GroupPanelT();
     
     // private CalendarPanel p = new CalendarPanel();
 

@@ -54,9 +54,8 @@ public class MainPanel extends JPanel {
 
     // 객체 생성시 사용자 id, DB를 받음
     // 그리고 GUI 기본 설정
-    public MainPanel(String userId, SDAO dao) {
+    public MainPanel(String userId) {
         this.userId = userId;
-        this.scheduleDAO = dao;
 
         setLayout(new BorderLayout());
 
