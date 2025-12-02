@@ -2,22 +2,20 @@ package DB;
 
 // 일정 객체
 public class Schedule {
-    // 일정 id
-    private int scheduleId;
-    // 사용자 id
-    private String writerId;
-    // 그룹 id
-    private int groupId;
-    // 일정 이름
-    private String scheduleName;
-    // 일정 종류
-    private String scheduleType;
-    // 시작 날짜 + 시간
-    // "2025-11-29 10:00"
-    private String startAt;
-    // 마감 날짜 + 시간
-    // "2025-11-29 12:00"
-    private String endAt;
+    
+    private int scheduleId; // 일정 id
+    
+    private String writerId; // 사용자 id
+
+    private int groupId;	    // 그룹 id
+    
+    private String scheduleName; // 일정 이름
+    
+    private String scheduleType; // 일정 종류
+    
+    private String startAt; // 시작 날짜 + 시간     // "2025-11-29 10:00"
+
+    private String endAt;  // 마감 날짜 + 시간 	    // "2025-11-29 12:00"
 
     // 일정 객체 생성자
     /**
@@ -41,38 +39,37 @@ public class Schedule {
         this.endAt = endAt;
     }
 
-    // 일정 id 리턴
-    public int getScheduleId() {
+    public int getScheduleId() {    // 일정 id 리턴
         return scheduleId;
     }
 
-    // 사용자 id 리턴
-    public String getWriterId() {
+
+    public String getWriterId() {	// 사용자 id 리턴
         return writerId;
     }
 
-    // 그룹 id 리턴
-    public int getGroupId() {
+
+    public int getGroupId() {	    // 그룹 id 리턴
         return groupId;
     }
 
-    // 일정 이름 리턴
-    public String getScheduleName() {
+
+    public String getScheduleName() {    // 일정 이름 리턴
         return scheduleName;
     }
 
-    // 일정 종류 리턴
-    public String getScheduleType() {
+
+    public String getScheduleType() {     // 일정 종류 리턴
         return scheduleType;
     }
 
-    // 시작 날짜 + 시간 리턴
-    public String getStartAt() {
+
+    public String getStartAt() {     // 시작 날짜 + 시간 리턴
         return startAt;
     }
 
-    // 마감 날짜 + 시간 리턴
-    public String getEndAt() {
+
+    public String getEndAt() {     // 마감 날짜 + 시간 리턴
         return endAt;
     }
 

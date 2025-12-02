@@ -1,16 +1,16 @@
 package DB;
 
 public class Memo {
-    // 메모 id
-    int memo_id;
-    // 그룹 id
-    int group_id;
-    // 작성자 id (사용자 id)
-    String writer_id;
-    // 내용
-    String content;
-    // 작성일시
-    String created_at;
+    
+    int memo_id; // 메모 id
+    
+    int group_id; // 그룹 id
+    
+    String writer_id; // 작성자 id (사용자 id)
+    
+    String content; // 내용
+    
+    String created_at; // 작성일시
 
     public Memo(int memo_id, int group_id, String writer_id, String content, String created_at) {
         this.memo_id = memo_id;
