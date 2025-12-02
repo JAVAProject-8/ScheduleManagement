@@ -2,8 +2,8 @@ package GUI.Panel.test;
 
 import javax.swing.*;
 import java.awt.*;
-import DB.SDAO;
-import GUI.Panel.MainPanel;
+// import DB.SDAO;
+// import GUI.Panel.MainPanel;
 
 // 패널들 테스트용 프래임
 public class GUITest {
@@ -24,10 +24,7 @@ class TestFrame extends JFrame {
     // 구현 완료
     // private MainPanel p = new MainPanel("id1", sdao);
     // private TimetablePanel p = new TimetablePanel();
-    // private TimetablePanelT p = new TimetablePanelT("id1");
-    
-    // private GroupPanel p = new GroupPanel();
-    private GroupPanelT p = new GroupPanelT();
+    private GroupPanel p = new GroupPanel();
     
     // private CalendarPanel p = new CalendarPanel();
 
