@@ -38,6 +38,8 @@ public class CalendarPanel extends JPanel {
         for (int d = 1; d <= lastDay; d++) {
             int day = d;
             JButton btn = new JButton(String.valueOf(day));
+            btn.setBackground(Color.WHITE);
+            btn.setFocusPainted(false);
 
             btn.addActionListener((ActionEvent e) -> openScheduleDialog(day));
             datePanel.add(btn);
