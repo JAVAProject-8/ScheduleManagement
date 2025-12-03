@@ -10,7 +10,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+// import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class TimetablePanel extends JPanel {
@@ -91,8 +91,8 @@ public class TimetablePanel extends JPanel {
 
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
-        LocalDateTime start = parseDateTime(schedule.getStartAt());
-        LocalDateTime end = parseDateTime(schedule.getEndAt());
+        LocalDateTime start = schedule.getStartAt();
+        LocalDateTime end = schedule.getEndAt();
 
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
@@ -118,10 +118,10 @@ public class TimetablePanel extends JPanel {
      * @param dt yyyy-MM-dd HH:mm 형식에 날짜+시간
      * @return 날짜 반환
      */
-    private LocalDateTime parseDateTime(String dt) {
+    /* private LocalDateTime parseDateTime(String dt) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return LocalDateTime.parse(dt, fmt);
-    }
+    } */
 
     // 요일 -> 컬럼 변환 (월 1 ... 일 7)
     private int dayOfWeekToColumn(DayOfWeek dow) {
