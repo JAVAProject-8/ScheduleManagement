@@ -37,7 +37,7 @@ import javax.swing.*;
 import DB.Schedule;
 import java.awt.*;
 import java.util.ArrayList;
-// TODO : 현재는 테스트 용
+
 import DB.SDAO;
 
 // 메인 패널
