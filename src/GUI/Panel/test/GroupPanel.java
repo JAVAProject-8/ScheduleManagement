@@ -7,18 +7,15 @@ import DB.Schedule;
 
 import java.awt.*;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.List;
 
 public class GroupPanel extends JPanel {
     private JComboBox<String> groupComboBox;
     private JTable table;
     private DefaultTableModel model;
     private final TestDAO mockDAO = new TestDAO();
-    // private String userId = null;
-    private Random random = new Random();
-    private int rd = random.nextInt(256);
+    // private Random random = new Random();
+    // private int rd = random.nextInt(256);
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
@@ -27,12 +24,12 @@ public class GroupPanel extends JPanel {
 
     private Map<String, Color> memberColorMap = new HashMap<>();
 
-    public GroupPanel() {
+    public GroupPanel() {  
         setLayout(new BorderLayout());
 
         // 상단 패널 - 그룹 선택 콤보박스
         JPanel topPanel = new JPanel();
-        topPanel.add(new JLabel("그룹 선택 "));
+        topPanel.add(new JLabel("그룹 선택"));
         groupComboBox = new JComboBox<>();
         
         topPanel.add(groupComboBox);
@@ -112,10 +109,10 @@ public class GroupPanel extends JPanel {
         clearTable();
 
         // 그룹원 일정 로드
-        List<Schedule> schedules = mockDAO.getGroupSchedules(groupName);
+        ArrayList<Schedule> schedules = mockDAO.getGroupSchedules(groupName);
 
         // 그룹원 별 색상 매핑
-        assignMemberColors(schedules);
+        // assignMemberColors(schedules);
 
         // 테이블 배치
         for (Schedule s : schedules) {
@@ -139,8 +136,8 @@ public class GroupPanel extends JPanel {
 
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
-        LocalDateTime start = parseDateTime(schedule.getStartAt());
-        LocalDateTime end = parseDateTime(schedule.getEndAt());
+        LocalDateTime start = schedule.getStartAt();
+        LocalDateTime end = schedule.getEndAt();
 
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
@@ -159,18 +156,19 @@ public class GroupPanel extends JPanel {
             model.setValueAt(schedule, row, col);
         }
     }
+    /*
     // TODO : 그룹원 별 색상 구분
-    /** 그룹원마다 고유 색상 부여 */
+    //그룹원마다 고유 색상 부여
     private void assignMemberColors(List<Schedule> list) {
         memberColorMap.clear();
      
         for (Schedule s : list) {
             String member = s.getWriterId();
             if (!memberColorMap.containsKey(member)) {
-                memberColorMap.put(member, getColorForSchedule(rd));
+                memberColorMap.put(member, getColorForSchedule(member));
             }
         }
-    }
+    } */
 
     /** 시간표 초기화 */
     private void clearTable() {
@@ -187,10 +185,10 @@ public class GroupPanel extends JPanel {
      * @param dt yyyy-MM-dd HH:mm 형식에 날짜+시간
      * @return 날짜 반환
      */
-    private LocalDateTime parseDateTime(String dt) {
+    /* private LocalDateTime parseDateTime(String dt) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return LocalDateTime.parse(dt, fmt);
-    }
+    } */
 
     // 요일 -> 컬럼 변환 (월 1 ... 일 7)
     private int dayOfWeekToColumn(DayOfWeek dow) {
@@ -214,19 +212,28 @@ public class GroupPanel extends JPanel {
             if (value instanceof Schedule) {
                 Schedule s = (Schedule) value;
                 setText(s.getScheduleName());
-                c.setBackground(getColorForSchedule(rd));
+                c.setBackground(getColorForSchedule(s.getWriterId()));
             }
 
             return c;
         }
     }
 
+    // TODO : 사용자 id로 색상을 구분하니 0 ~ 255 범위 이상임 -> HSB 변환
     /** 일정 ID 기반 해시 색상 생성 */
     // 렌덤으로 0 ~ 255
-    private Color getColorForSchedule(int rd) {
-        int r = (rd * 37) % 200 + 30;
-        int g = (rd * 67) % 200 + 30;
-        int b = (rd * 97) % 200 + 30;
+    private Color getColorForSchedule(String id) {
+        if (memberColorMap.containsKey(id)) {
+            return memberColorMap.get(id);
+        }
+
+        int hash = Math.abs(id.hashCode());
+        int r = Math.abs((hash * 37) % 200 + 30);
+        int g = Math.abs((hash * 67) % 200 + 30);
+        int b = Math.abs((hash * 97) % 200 + 30);
+        System.out.println("id : " + id + "idH : " + id.hashCode() + " abs(h) :" + hash);
+        System.out.println("r : " + r + " g : " + g + " b : " + b);
+        
         return new Color(r, g, b, 60); // 약간 투명하게
     }
 }
