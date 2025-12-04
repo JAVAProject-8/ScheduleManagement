@@ -327,6 +327,32 @@ public class SDAO {
         return result;
     }
 
+    // 기능: 특정 일정을 삭제한다
+    // 매개변수: 삭제할 일정의 ID (schedule_id)
+    // 반환값: boolean (성공 true, 실패 false)
+    public boolean deleteSchedule(int scheduleId) {
+        boolean result = false;
+
+        String sql = "DELETE FROM schedules WHERE schedule_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, scheduleId);
+
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                result = true;
+                System.out.println("일정 삭제 성공 (ID: " + scheduleId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("일정 삭제 실패");
+        }
+
+        return result;
+    }
+
     // 기능: 전달받은 유저ID를 DB에 조회하여 소속 그룹을 리스트로 반환한다
     // 매개변수: (유저ID)
     // 반환값: Group 리스트
