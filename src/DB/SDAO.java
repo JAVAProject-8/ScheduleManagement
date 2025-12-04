@@ -93,6 +93,44 @@ public class SDAO {
         }
     }
 
+    // 기능: user_id를 받아서 User 객체 반환
+    // 매개변수: 조회할 user_id
+    // 반환값: User 객체 (없으면 null)
+    public User getUserInfo(String userId) {
+        User user = null;
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setID(rs.getString("user_id"));
+                    user.setPW(rs.getString("password"));
+                    user.setName(rs.getString("name"));
+                    user.setOrganization(rs.getString("organization"));
+
+                    // Date -> LocalDate 변환
+                    java.sql.Date dbDate = rs.getDate("birth_date");
+                    if (dbDate != null) {
+                        user.setBirthDate(dbDate.toLocalDate());
+                    }
+
+                    user.setPhoneNumber(rs.getString("phone"));
+                    user.setEmail(rs.getString("email"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("유저 정보 조회 중 오류 발생");
+        }
+
+        return user;
+    }
+
     // 기능: 사용자 정보 수정
     // 매개변수: 수정할 정보가 담긴 User 객체 (ID는 WHERE 조건으로 사용)
     // 반환값: true(성공), false(실패)
@@ -454,6 +492,31 @@ public class SDAO {
         }
 
         return list;
+    }
+
+    // 기능: 메모 객체를 받아서 DB에 새 메모 삽입 (작성일시는 DB 자동 생성)
+    // 매개변수: Memo 객체 (group_id, writer_id, content 필요)
+    // 반환값: true(성공), false(실패)
+    public boolean insertMemo(Memo memo) {
+        String sql = "INSERT INTO memoes (group_id, writer_id, content) VALUES (?, ?, ?)";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, memo.getGroupId());
+            pstmt.setString(2, memo.getWriterId());
+            pstmt.setString(3, memo.getContent());
+
+            int result = pstmt.executeUpdate();
+
+            // 1행 이상 삽입되면 성공
+            return result > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("메모 삽입 중 DB 오류 발생: " + e.getMessage());
+            return false;
+        }
     }
 
     // 기능: 해당 그룹의 모든 메모를 list로 반환한다
