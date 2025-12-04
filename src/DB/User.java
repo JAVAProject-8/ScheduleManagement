@@ -3,19 +3,12 @@ package DB;
 import java.time.*;
 
 public class User {
-	
 	private String ID; // 사용자 id
-	
 	private String PW; // 비밀번호
-	
 	private String name; // 이름
-	
 	private String organization; // 소속
-
 	private LocalDate birthDate; // 생년월일
-	
 	private String phoneNumber; // 전화번호
-	
 	private String email; // 이메일
 
 	public String getID() {

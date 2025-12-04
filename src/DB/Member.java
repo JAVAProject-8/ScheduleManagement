@@ -1,16 +1,11 @@
 package DB;
 
 public class Member {
-    // 그룹원 id
-    String user_id;
-    // 그룹 id
-    String group_id;
-    // 관리자 권한
-    String is_admin;
-    // 업무
-    String task;
-    // 유저 이름
-    String user_name;
+    String user_id;	// 그룹원 id
+    String group_id;	// 그룹 id
+    String is_admin;	// 관리자 권한
+    String task;	// 업무
+    String user_name;	// 유저 이름
 
     public Member(String user_id, String group_id, String is_admin, String task, String user_name) {
         this.user_id = user_id;
