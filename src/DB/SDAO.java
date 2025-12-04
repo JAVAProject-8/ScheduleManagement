@@ -194,7 +194,7 @@ public class SDAO {
                 while (rs.next()) {
                     int id = rs.getInt("schedule_id");
                     String wId = rs.getString("writer_id");
-                    int gid = rs.getInt("group_id");
+                    String gid = rs.getString("group_id");
                     String name = rs.getString("schedule_name");
                     String type = rs.getString("schedule_type");
                     java.sql.Timestamp startTs = rs.getTimestamp("start_at");
@@ -233,14 +233,14 @@ public class SDAO {
             pstmt.setString(1, dto.getWriterId());
 
             // 그룹 ID 처리
-            // Schedule 객체의 groupId가 0이면 -> 개인 일정(DB에 NULL 저장)
+            // Schedule 객체의 groupId가 null이면 -> 개인 일정(DB에 NULL 저장)
             // 0이 아니면 -> 그룹 일정(DB에 숫자 저장)
-            if (dto.getGroupId() == 0) {
+            if (dto.getGroupId() == null) {
                 // 개인 일정일 때: DB에 'NULL'을 집어넣으라는 명령어
                 pstmt.setNull(2, java.sql.Types.INTEGER);
             } else {
                 // 그룹 일정일 때: 실제 그룹 번호(1, 2, 3...)를 집어넣음
-                pstmt.setInt(2, dto.getGroupId());
+                pstmt.setString(2, dto.getGroupId());
             }
 
             // 일정 제목
@@ -299,10 +299,10 @@ public class SDAO {
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            if (dto.getGroupId() == 0) {
+            if (dto.getGroupId() == null) {
                 pstmt.setNull(1, java.sql.Types.INTEGER);
             } else {
-                pstmt.setInt(1, dto.getGroupId());
+                pstmt.setString(1, dto.getGroupId());
             }
 
             pstmt.setString(2, dto.getScheduleName());
@@ -372,7 +372,7 @@ public class SDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    int id = rs.getInt("group_id");
+                    String id = rs.getString("group_id");
                     String name = rs.getString("group_name");
                     String code = rs.getString("invite_code");
 
@@ -389,7 +389,7 @@ public class SDAO {
     // 기능: 그룹ID를 DB에 조회하여 해당 그룹 정보를 Group 객체로 반환한다.
     // 매개변수: 그룹ID
     // 반환값: Group 객체
-    public Group getGroupInfo(int groupId) {
+    public Group getGroupInfo(String groupId) {
         Group group = null;
         String sql = "SELECT group_id, group_name, invite_code "
                 + "FROM user_groups "
@@ -398,7 +398,7 @@ public class SDAO {
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, groupId);
+            pstmt.setString(1, groupId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -416,7 +416,7 @@ public class SDAO {
     // 기능: 해당 그룹의 모든 그룹원을 리스트로 반환한다
     // 매개변수: 그룹ID
     // 반환값: Member 리스트
-    public ArrayList<Member> getMembersByGroupId(int groupId) {
+    public ArrayList<Member> getMembersByGroupId(String groupId) {
         ArrayList<Member> list = new ArrayList<>();
 
         String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, "
@@ -429,13 +429,13 @@ public class SDAO {
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, groupId);
+            pstmt.setString(1, groupId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     // DB에서 값 꺼내기
                     String user_id = rs.getString("user_id");
-                    int group_id = rs.getInt("group_id");
+                    String group_id = rs.getString("group_id");
                     String is_admin = rs.getString("is_admin");
                     String task = rs.getString("task");
                     String user_name = rs.getString("name"); // 이름
@@ -459,7 +459,7 @@ public class SDAO {
     // 기능: 해당 그룹의 모든 메모를 list로 반환한다
     // 매개변수: 그룹ID
     // 반환값: Memo 리스트
-    public ArrayList<Memo> getMemosByGroupId(int groupId) {
+    public ArrayList<Memo> getMemosByGroupId(String groupId) {
         ArrayList<Memo> list = new ArrayList<>();
 
         // 해당 그룹의 메모 불러오기
@@ -474,14 +474,14 @@ public class SDAO {
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             // SQL의 ? 부분 채우기
-            pstmt.setInt(1, groupId);
+            pstmt.setString(1, groupId);
 
             // 실행 및 결과 받기
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     // DB에서 값 꺼내기
                     int mId = rs.getInt("memo_id");
-                    int gId = rs.getInt("group_id");
+                    String gId = rs.getString("group_id");
                     String wId = rs.getString("writer_id");
                     String content = rs.getString("content");
                     String date = rs.getString("date_str"); // 포맷팅된 날짜 문자열
@@ -501,7 +501,7 @@ public class SDAO {
     // 기능: 그룹 생성하고 생성자를 관리자로 등록함 초대코드도 자동으로 생성
     // 매개변수: 그룹 이름, 생성자 ID
     // 반환값: boolean(성공 true, 실패 false))
-    boolean createGroup(String groupName, String writerId) {
+    boolean createGroup(String groupId, String groupName, String writerId) {
         Connection conn = null;
         PreparedStatement pstmtGroup = null;
         PreparedStatement pstmtMember = null;
@@ -519,25 +519,18 @@ public class SDAO {
             conn.setAutoCommit(false);
 
             // user_groups 테이블에 그룹 정보 INSERT
-            // RETURN_GENERATED_KEYS: 방금 만든 그룹의 ID(PK)를 알아내기 위함
-            String sqlGroup = "INSERT INTO user_groups (group_name, invite_code) VALUES (?, ?)";
-            pstmtGroup = conn.prepareStatement(sqlGroup, Statement.RETURN_GENERATED_KEYS);
-            pstmtGroup.setString(1, groupName);
-            pstmtGroup.setString(2, inviteCode);
+            String sqlGroup = "INSERT INTO user_groups (group_id, group_name, invite_code) VALUES (?, ?, ?)";
+            pstmtGroup = conn.prepareStatement(sqlGroup);
+            pstmtGroup.setString(1, groupId);
+            pstmtGroup.setString(2, groupName);
+            pstmtGroup.setString(3, inviteCode);
             int result1 = pstmtGroup.executeUpdate();
-
-            // 방금 생성된 group_id 가져오기
-            int newGroupId = 0;
-            rs = pstmtGroup.getGeneratedKeys();
-            if (rs.next()) {
-                newGroupId = rs.getInt(1);
-            }
 
             // group_members 테이블에 작성자를 admin으로 추가
             String sqlMember = "INSERT INTO group_members (user_id, group_id, is_admin, progress) VALUES (?, ?, 'Y', 0)";
             pstmtMember = conn.prepareStatement(sqlMember);
             pstmtMember.setString(1, writerId);
-            pstmtMember.setInt(2, newGroupId);
+            pstmtMember.setString(2, groupId);
             int result2 = pstmtMember.executeUpdate();
 
             // 두 단계 모두 성공했다면 커밋(저장)
@@ -600,7 +593,7 @@ public class SDAO {
 
             if (rs.next()) {
                 // 그룹을 찾음
-                int groupId = rs.getInt("group_id");
+                String groupId = rs.getString("group_id");
                 String groupName = rs.getString("group_name");
 
                 // 해당 그룹에 멤버로 INSERT
@@ -609,7 +602,7 @@ public class SDAO {
 
                 pstmtInsert = conn.prepareStatement(sqlInsert);
                 pstmtInsert.setString(1, userId);
-                pstmtInsert.setInt(2, groupId);
+                pstmtInsert.setString(2, groupId);
 
                 int row = pstmtInsert.executeUpdate();
 
@@ -652,7 +645,7 @@ public class SDAO {
     // 기능: 업무 갱신
     // 매개변수: 대상 멤버ID, 그룹 ID, 변경할 업무 내용
     // 반환값: boolean(성공 시 true, 실패 시 false)
-    public boolean updateTask(String userId, int groupId, String task) {
+    public boolean updateTask(String userId, String groupId, String task) {
         String sql = "UPDATE group_members SET task = ? WHERE user_id = ? AND group_id = ?";
 
         try (Connection conn = DBC.connect();
@@ -660,7 +653,7 @@ public class SDAO {
 
             pstmt.setString(1, task);
             pstmt.setString(2, userId);
-            pstmt.setInt(3, groupId);
+            pstmt.setString(3, groupId);
 
             int result = pstmt.executeUpdate();
             return result > 0; // 1개 이상 수정되면 성공
