@@ -200,7 +200,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		String startDate = startYearField.getText().trim() + "-" + startMonthField.getText().trim() + "-" + startDateField.getText().trim();	// 사용자가 입력한 시작일
 		String endDate = endYearField.getText().trim() + "-" + endMonthField.getText().trim() + "-" + endDateField.getText().trim();	// 사용자가 입력한 종료일
 		if(startDate.length() == 10 || endDate.length() == 10) {	// 둘 중 하나라도 입력 되었다면
-			filters.add(new RowFilter<Object, Object>(){	// RowFilter 클래를 상속받는 익명 클래스 생성
+			filters.add(new RowFilter<Object, Object>(){	// RowFilter 클래스를 상속받는 익명 클래스 생성
 				@Override
 				public boolean include(Entry<?, ?> entry) {	// 메소드 재정의
 					String rowStartDate = entry.getStringValue(2).substring(0, 10);	// 인덱스로 시작일을 가져와 10글자로 가공("yyyy-MM-dd")
