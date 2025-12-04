@@ -49,8 +49,6 @@ public class MainPanel extends JPanel {
     private JTextArea deadlineArea;
     // 사용자 id
     private String userId;
-    // DB 연결 
-    private SDAO scheduleDAO;
 
     // 객체 생성시 사용자 id, DB를 받음
     // 그리고 GUI 기본 설정
@@ -93,9 +91,9 @@ public class MainPanel extends JPanel {
     private void loadSchedules() {
         // Schedule 일정 정보
         // DB에서 오늘의 일정을 가져옴
-        ArrayList<Schedule> todayList = scheduleDAO.getSchedules(userId);
+        ArrayList<Schedule> todayList = SDAO.getInstance().getSchedules(userId);
         // DB에서 마감 일정을 가져옴
-        ArrayList<Schedule> deadlineList = scheduleDAO.getSchedules(userId);
+        ArrayList<Schedule> deadlineList = SDAO.getInstance().getSchedules(userId);
 
         // DB에서 가져온 오늘의 일정를 연결
         StringBuilder today = scheduleBuilder(todayList, "");
