@@ -21,11 +21,11 @@ public class GUITest {
 class TestFrame extends JFrame {
     // private SDAO sdao = new SDAO();
     // 구현 완료
-    // private MainPanel p = new MainPanel("id1", sdao);
-    // private TimetablePanel p = new TimetablePanel();
-    private GroupPanel p = new GroupPanel();
+    // private MainPanel p = new MainPanel("id1");
+    // private TimetablePanel p = new TimetablePanel("id12");
+    // private GroupPanel p = new GroupPanel("id12");
     
-    // private CalendarPanel p = new CalendarPanel();
+    private CalendarPanel p = new CalendarPanel();
 
     public TestFrame() {
         Container ct = getContentPane();
