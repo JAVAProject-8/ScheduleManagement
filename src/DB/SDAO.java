@@ -4,10 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class SDAO {
-
-    private SDAO() {
-    }
-
+    private SDAO() {}
     private static SDAO instance = new SDAO();
 
     // SDAO 객체 반환
@@ -564,7 +561,7 @@ public class SDAO {
     // 기능: 그룹 생성하고 생성자를 관리자로 등록함 초대코드도 자동으로 생성
     // 매개변수: 그룹 이름, 생성자 ID
     // 반환값: boolean(성공 true, 실패 false))
-    boolean createGroup(String groupId, String groupName, String writerId) {
+    public boolean createGroup(String groupId, String groupName, String writerId) {
         Connection conn = null;
         PreparedStatement pstmtGroup = null;
         PreparedStatement pstmtMember = null;
