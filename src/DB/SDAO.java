@@ -62,7 +62,7 @@ public class SDAO {
     // 매개변수: (User 객체)
     // 반환값: true(성공), false(실패)
     public boolean registerUser(User user) {
-        String sql = "INSERT INTO users (user_id, password, name, organization, birth_date, phone_number, email) "
+        String sql = "INSERT INTO users (user_id, password, name, organization, birth_date, phone, email) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBC.connect();
@@ -174,7 +174,7 @@ public class SDAO {
     // 기능: 해당 유저의 모든 일정을 조회하여 리스트로 반환한다.
     // 매개변수: 유저ID
     // 반환값: Schedule 리스트
-    public ArrayList<Schedule> getTodaySchedules(String userId) {
+    public ArrayList<Schedule> getSchedules(String userId) {
         ArrayList<Schedule> list = new ArrayList<>();
 
         // 오늘 날짜에 포함되는 일정 조회
