@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class TimetablePanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
-    private final TestDAO mockDAO = new TestDAO();
     private String userId = null;
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
@@ -81,7 +80,7 @@ public class TimetablePanel extends JPanel {
 
     /** Mock DAO 데이터 로드 */
     private void loadTestData() {
-        ArrayList<Schedule> schedules = mockDAO.getPersonalSchedule(userId);
+        ArrayList<Schedule> schedules = TestDAO.getInstance().getPersonalSchedule(userId);
         for (Schedule s : schedules) {
             addScheduleToTable(s);
         }

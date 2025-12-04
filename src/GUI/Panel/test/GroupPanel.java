@@ -14,7 +14,6 @@ public class GroupPanel extends JPanel {
     private JComboBox<String> groupComboBox;
     private JTable table;
     private DefaultTableModel model;
-    private final TestDAO mockDAO = new TestDAO();
     private String userId = null;
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
@@ -102,7 +101,7 @@ public class GroupPanel extends JPanel {
 
     /** Mock DAO로 그룹 목록 가져오기 */
     private void loadGroupList() {
-        ArrayList<String> groups = mockDAO.getGroupList();
+        ArrayList<String> groups = TestDAO.getInstance().getGroupList();
         for (String g : groups) {
             groupComboBox.addItem(g);
         }
@@ -113,7 +112,7 @@ public class GroupPanel extends JPanel {
         clearTable();
 
         // 그룹원 일정 로드
-        ArrayList<Schedule> schedules = mockDAO.getGroupSchedules(groupName);
+        ArrayList<Schedule> schedules = TestDAO.getInstance().getGroupSchedules(groupName);
 
         // 그룹원 별 색상 매핑
         // assignMemberColors(schedules);

@@ -25,7 +25,7 @@ class TestFrame extends JFrame {
     // private TimetablePanel p = new TimetablePanel("id12");
     // private GroupPanel p = new GroupPanel("id12");
     
-    private CalendarPanel p = new CalendarPanel();
+    private CalendarPanel p = new CalendarPanel("id1");
 
     public TestFrame() {
         Container ct = getContentPane();
