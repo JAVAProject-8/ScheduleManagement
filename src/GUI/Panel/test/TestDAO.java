@@ -2,10 +2,22 @@ package GUI.Panel.test;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import DB.Schedule;
 
+// TODO : 테스트용 DAO
 public class TestDAO {
-   public ArrayList<Schedule> getPersonalSchedule(String userId) {
+    private TestDAO() {
+    }
+
+    private static TestDAO instance = new TestDAO();
+
+    // SDAO 객체 반환
+    public static TestDAO getInstance() {
+        return instance;
+    }
+
+    public ArrayList<Schedule> getPersonalSchedule(String userId) {
         ArrayList<Schedule> list = new ArrayList<>(); 
 
         // "2025-11-27 09:00"
@@ -51,7 +63,7 @@ public class TestDAO {
 
     public ArrayList<Schedule> getGroupSchedules(String groupName) {
         ArrayList<Schedule> list = new ArrayList<>();
-        // Schedule(String writerId, String groupId, String name, String type, LocalDateTime startAt,     LocalDateTime endAt) {
+        
         if (groupName.equals("GA")) {
                 list.add(new Schedule(
                         "user1", 
@@ -102,5 +114,38 @@ public class TestDAO {
         }
 
         return list;
+    }
+
+    public ArrayList<Schedule> getScheduleDate(int year, int month, int day, String userId) {
+        ArrayList<Schedule> list = new ArrayList<>();
+        ArrayList<Schedule> reslist = new ArrayList<>();
+
+        list.add(new Schedule(
+            userId, "자료구조 강의", "일",
+            LocalDateTime.of(2025, 12, 04, 9, 0),
+            LocalDateTime.of(2025, 12, 04, 12, 15)));
+        
+        list.add(new Schedule(
+            userId, "헬스장", "일",
+            LocalDateTime.of(2025, 12, 04, 13, 0),
+            LocalDateTime.of(2025, 12, 04, 14, 0)));
+
+        list.add(new Schedule(
+            userId, "팀 프로젝트 회의", "일",
+            LocalDateTime.of(2025, 12, 26, 15, 0),
+            LocalDateTime.of(2025, 12, 26, 16, 0)));
+    
+        list.add(new Schedule(
+            userId, "자바 과제", "일",
+                    LocalDateTime.of(2025, 12, 28, 11, 0),
+            LocalDateTime.of(2025, 12, 28, 12, 0)));
+
+        for (Schedule s : list) {
+            if (s.getStartAt().getYear() == year && s.getStartAt().getMonthValue() == month && s.getStartAt().getDayOfMonth() == day) {
+                reslist.add(s);
+            }
+        }
+        
+        return reslist;
     }
 }
