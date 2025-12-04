@@ -93,9 +93,9 @@ public class MainPanel extends JPanel {
     private void loadSchedules() {
         // Schedule 일정 정보
         // DB에서 오늘의 일정을 가져옴
-        ArrayList<Schedule> todayList = scheduleDAO.getTodaySchedules(userId);
+        ArrayList<Schedule> todayList = scheduleDAO.getSchedules(userId);
         // DB에서 마감 일정을 가져옴
-        ArrayList<Schedule> deadlineList = scheduleDAO.getTodaySchedules(userId);
+        ArrayList<Schedule> deadlineList = scheduleDAO.getSchedules(userId);
 
         // DB에서 가져온 오늘의 일정를 연결
         StringBuilder today = scheduleBuilder(todayList, "");
@@ -119,7 +119,7 @@ public class MainPanel extends JPanel {
             sb
                 .append(i + 1)
                 .append(". ")
-                .append(schedulelList.get(i).getScheduleName())
+                .append(schedulelList.get(i).getScheduleDescription())
                 .append("  (").append(type)
                 .append(schedulelList.get(i).getStartAt())
                 .append(")\n");

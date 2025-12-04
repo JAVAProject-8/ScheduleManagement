@@ -4,7 +4,9 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class SDAO {
-    private SDAO() {}
+    private SDAO() {
+    }
+
     private static SDAO instance = new SDAO();
 
     // SDAO 객체 반환
@@ -213,7 +215,7 @@ public class SDAO {
         ArrayList<Schedule> list = new ArrayList<>();
 
         // 오늘 날짜에 포함되는 일정 조회
-        String sql = "SELECT schedule_id, writer_id, group_id, schedule_name, schedule_type, "
+        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, "
                 + "start_at, end_at "
                 + "FROM schedules "
                 + "WHERE writer_id = ? "
@@ -230,7 +232,7 @@ public class SDAO {
                     int id = rs.getInt("schedule_id");
                     String wId = rs.getString("writer_id");
                     String gid = rs.getString("group_id");
-                    String name = rs.getString("schedule_name");
+                    String description = rs.getString("schedule_description");
                     String type = rs.getString("schedule_type");
                     java.sql.Timestamp startTs = rs.getTimestamp("start_at");
                     java.sql.Timestamp endTs = rs.getTimestamp("end_at");
@@ -239,7 +241,7 @@ public class SDAO {
                     java.time.LocalDateTime start = (startTs != null) ? startTs.toLocalDateTime() : null;
                     java.time.LocalDateTime end = (endTs != null) ? endTs.toLocalDateTime() : null;
 
-                    list.add(new Schedule(id, wId, gid, name, type, start, end));
+                    list.add(new Schedule(id, wId, gid, description, type, start, end));
                 }
             }
         } catch (Exception e) {
@@ -256,7 +258,7 @@ public class SDAO {
         PreparedStatement pstmt = null;
 
         // 개인 일정과 그룹 일정 모두 명시함
-        String sql = "INSERT INTO schedules (writer_id, group_id, schedule_name, schedule_type, start_at, end_at) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO schedules (writer_id, group_id, schedule_description, schedule_type, start_at, end_at) VALUES (?, ?, ?, ?, ?, ?)";
 
         boolean result = false;
 
@@ -279,7 +281,7 @@ public class SDAO {
             }
 
             // 일정 제목
-            pstmt.setString(3, dto.getScheduleName());
+            pstmt.setString(3, dto.getScheduleDescription());
 
             // 일정 종류
             pstmt.setString(4, dto.getScheduleType());
@@ -325,7 +327,7 @@ public class SDAO {
 
         String sql = "UPDATE schedules SET "
                 + "group_id = ?, "
-                + "schedule_name = ?, "
+                + "schedule_description = ?, "
                 + "schedule_type = ?, "
                 + "start_at = ?, "
                 + "end_at = ? "
@@ -340,8 +342,8 @@ public class SDAO {
                 pstmt.setString(1, dto.getGroupId());
             }
 
-            pstmt.setString(2, dto.getScheduleName());
-            pstmt.setString(2, dto.getScheduleName());
+            pstmt.setString(2, dto.getScheduleDescription());
+            pstmt.setString(2, dto.getScheduleDescription());
             pstmt.setString(3, dto.getScheduleType());
             pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
             pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
@@ -587,7 +589,7 @@ public class SDAO {
             int result1 = pstmtGroup.executeUpdate();
 
             // group_members 테이블에 작성자를 admin으로 추가
-            String sqlMember = "INSERT INTO group_members (user_id, group_id, is_admin, progress) VALUES (?, ?, 'Y', 0)";
+            String sqlMember = "INSERT INTO group_members (user_id, group_id, is_admin) VALUES (?, ?, 'Y')";
             pstmtMember = conn.prepareStatement(sqlMember);
             pstmtMember.setString(1, writerId);
             pstmtMember.setString(2, groupId);
@@ -658,7 +660,7 @@ public class SDAO {
 
                 // 해당 그룹에 멤버로 INSERT
                 // 일반 멤버(N), 진척도 0으로 시작
-                String sqlInsert = "INSERT INTO group_members (user_id, group_id, is_admin, progress, task) VALUES (?, ?, 'N', 0, NULL)";
+                String sqlInsert = "INSERT INTO group_members (user_id, group_id, is_admin, task) VALUES (?, ?, 'N', NULL)";
 
                 pstmtInsert = conn.prepareStatement(sqlInsert);
                 pstmtInsert.setString(1, userId);

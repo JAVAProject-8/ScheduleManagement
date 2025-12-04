@@ -211,7 +211,7 @@ public class GroupPanel extends JPanel {
             // 일정 추가된 위치 색상 추가
             if (value instanceof Schedule) {
                 Schedule s = (Schedule) value;
-                setText(s.getScheduleName());
+                setText(s.getScheduleDescription());
                 c.setBackground(getColorForSchedule(s.getWriterId()));
             }
 
