@@ -1,17 +1,21 @@
 package GUI;
 
 import DB.User;
+import DB.Group;
 import DB.SDAO;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Vector;
+
 import javax.swing.border.EmptyBorder;
-import java.util.Random;
 
 public class MainFrame extends JFrame implements ActionListener {
 	User user = null;
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
+	JPanel groupMainPanel = null;
 	
 	public MainFrame(User _u) {
 		Container ct = getContentPane();
@@ -56,12 +60,15 @@ public class MainFrame extends JFrame implements ActionListener {
 		// 그룹 홀더(JTabbedPane) 설정
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.setBackground(Color.WHITE);
-		ct.add(tabbedPane);
+		
+		// 패널 생성
+		groupMainPanel = new GroupMainPanel(user);
+		
 		
 		tabbedPane.addTab("메인", new JPanel());
 		tabbedPane.addTab("시간표", new JPanel());
 		tabbedPane.addTab("캘린더", new JPanel());
-		tabbedPane.addTab("그룹 메인", new GroupMainPanel());
+		tabbedPane.addTab("그룹 메인", groupMainPanel);
 		tabbedPane.addTab("그룹 시간표", new JPanel());
 		
 		// ActionListener 등록
@@ -73,10 +80,12 @@ public class MainFrame extends JFrame implements ActionListener {
 		editUserInfoMenuItem.addActionListener(this);
 		exitMenuItem.addActionListener(this);
 		
+		ct.add(tabbedPane);
+		
 		setTitle("일정 관리 프로그램");
-		pack();
-		//setSize(500, 500);
-		//setResizable(false);	// 크기 조정
+		//pack();
+		setSize(1000, 500);
+		setResizable(false);	// 크기 조정
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
 		setVisible(true);
@@ -87,54 +96,71 @@ public class MainFrame extends JFrame implements ActionListener {
 		String command = e.getActionCommand();
 		
 		if(command.equals("일정 추가")) {
-			new AddScheduleDialog(this, "일정 추가");
+			new AddScheduleDialog(this, "일정 추가", user);
 			// 일정 추가는 메뉴 외에 JTable 에서 MouseEvent로도 호출될 수 있음. 이 경우 생성자에 시각 시간을 전달
 			// 또는 캘린더에서 호출될 수 있음. 이 경우 생성자에 날짜를 전달
 		}
 		else if(command.equals("전체 일정 조회")) {
-			new CheckScheduleDialog(this, "전체 일정 조회");
+			new CheckScheduleDialog(this, "전체 일정 조회", user);
 		}
 		else if(command.equals("그룹 생성")) {
-			String groupId = JOptionPane.showInputDialog(null, "그룹 아이디를 입력해주세요", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
-			if(groupId == null) {
+			String groupId = JOptionPane.showInputDialog(null, "그룹 아이디를 입력해주세요.", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
+			if(groupId.equals("") || groupId == null) {
 				return;
 			}
-			String groupName = JOptionPane.showInputDialog(null, "그룹명을 입력해주세요", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
-			if(groupName == null) {
+			String groupName = JOptionPane.showInputDialog(null, "그룹명을 입력해주세요.", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
+			if(groupName.equals("") || groupName == null) {
 				return;
 			}
 			
-			// 초대 코드를 생성(여기서 할 필요 없음)
-			Random random = new Random();
-			String characterSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-			String inviteCode = "";
-			for(int i = 0; i < 10; i++) {
-				inviteCode += characterSet.charAt(random.nextInt(characterSet.length()));
-			}
-			JOptionPane.showMessageDialog(null, inviteCode);
+			// 그룹 아이디와 그룹 명, 초대 코드를 DB에 전달(수정 필요)
+			boolean result = SDAO.getInstance().createGroup(groupId, groupName, user.getID());	//
 			
-			// 그룹 아이디와 그룹 명, 초대 코드를 DB에 전달
-			// 그룹 아이디가 중복될 경우 생성 불가, 재입력 필요
+			// 그룹 생성 성공
+			if(result) {
+				JOptionPane.showMessageDialog(null, "그룹 생성 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+			}
+			// 그룹 생성 실패
+			else {
+				JOptionPane.showMessageDialog(null, "그룹 생성 실패", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		else if(command.equals("그룹 가입")) {
-			String inviteCode = JOptionPane.showInputDialog(null, "초대코드를 입력해주세요", "그룹 가입", JOptionPane.QUESTION_MESSAGE);
-			if(inviteCode == null) {
+			String inviteCode = JOptionPane.showInputDialog(null, "초대코드를 입력해주세요.", "그룹 가입", JOptionPane.QUESTION_MESSAGE);
+			if(inviteCode.equals("") || inviteCode == null) {
 				return;
 			}
 			
-			// DAO에게 입력받은 초대 코드와 사용자 아이디를 전달
-			// 그룹이 존재할 시 데이터베이스에 추가 후 성공 반환, 부재 시 실패 반환
+			int result = SDAO.getInstance().joinGroup(user.getID(), inviteCode);	// 사용자 아이디와 초대코드를 인수로 DAO 객체에서 그룹 가입 성공 여부 반환
 			
+			// 그룹 가입 성공
+			if(result == 1) {
+				JOptionPane.showMessageDialog(null, "그룹 가입 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+			}
+			// 초대 코드 오류, 그룹 가입 실패
+			else if(result == 0) {
+				JOptionPane.showMessageDialog(null, "그룹 가입 실패(초대 코드 오류)", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
+			// 그 외 오류로 그룹 가입 실패
+			if(result == -1) {
+				JOptionPane.showMessageDialog(null, "그룹 가입 실패(예상치 못한 오류)", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		else if(command.equals("그룹 탈퇴")) {
-			// DB에서 현재 로그인 한 사용자가 속해 있는 그룹명을 배열 형태로 받아옴
+			ArrayList<Group> groups = SDAO.getInstance().getMyGroups(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 그룹 ArrayList 반환
+			Object[] options = groups.toArray();	// ArrayList를 Object 배열로 변환
+			Group selectedGroup = (Group)JOptionPane.showInputDialog(null, "탈퇴할 그룹을 선택해주세요", "그룹 탈퇴", JOptionPane.QUESTION_MESSAGE, null, options, null);
 			
-			String[] testArray = {"abc", "def", "ghi"};	// 테스트용 임시 문자열 배열
-			String leaveGroupName = (String)JOptionPane.showInputDialog(null, "탈퇴할 그룹을 선택해주세요", "그룹 탈퇴", JOptionPane.QUESTION_MESSAGE, null, testArray, null);
+			//boolean result = SDAO.getInstance().exitGroup(user.getID(), selectedGroup.getGroupId());	// 사용자 아이디와 그룹 아이디를 인수로 DAO 객체에서 그룹 탈퇴 성공 여부 반환
 			
-			// DAO에게 선택한 그룹의 ID와 사용자 아이디를 전달
-			// 그룹명과 ID를 동시에 받아오려면 그룹 객체에 필드를 선언해서 리스트로..
-			// DB의 그룹원 테이블에서 해당 사용자를 삭제 처리
+//			// 그룹 탈퇴 성공 시
+//			if(result) {
+//				
+//			}
+//			// 그룹 탈퇴 실패 시
+//			else {
+//				
+//			}
 		}
 		else if(command.equals("사용자 정보 관리")) {
 			new EditUserInfoDialog(this, "사용자 정보 관리", user);	// 현재 User 객체를 전달
