@@ -3,6 +3,7 @@ package GUI.Panel.test;
 import javax.swing.*;
 import javax.swing.table.*;
 
+// import DB.SDAO;
 import DB.Schedule;
 
 import java.awt.*;
@@ -13,9 +14,7 @@ public class GroupPanel extends JPanel {
     private JComboBox<String> groupComboBox;
     private JTable table;
     private DefaultTableModel model;
-    private final TestDAO mockDAO = new TestDAO();
-    // private Random random = new Random();
-    // private int rd = random.nextInt(256);
+    private String userId = null;
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
@@ -24,9 +23,11 @@ public class GroupPanel extends JPanel {
 
     private Map<String, Color> memberColorMap = new HashMap<>();
 
-    public GroupPanel() {  
-        setLayout(new BorderLayout());
+    public GroupPanel(String userId) {
+        this.userId = userId;
 
+        setLayout(new BorderLayout());
+        
         // 상단 패널 - 그룹 선택 콤보박스
         JPanel topPanel = new JPanel();
         topPanel.add(new JLabel("그룹 선택"));
@@ -78,6 +79,8 @@ public class GroupPanel extends JPanel {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
         }
 
+        // 테이블 열 크기
+        table.setRowHeight(50);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -98,7 +101,7 @@ public class GroupPanel extends JPanel {
 
     /** Mock DAO로 그룹 목록 가져오기 */
     private void loadGroupList() {
-        ArrayList<String> groups = mockDAO.getGroupList();
+        ArrayList<String> groups = TestDAO.getInstance().getGroupList();
         for (String g : groups) {
             groupComboBox.addItem(g);
         }
@@ -109,7 +112,7 @@ public class GroupPanel extends JPanel {
         clearTable();
 
         // 그룹원 일정 로드
-        ArrayList<Schedule> schedules = mockDAO.getGroupSchedules(groupName);
+        ArrayList<Schedule> schedules = TestDAO.getInstance().getGroupSchedules(groupName);
 
         // 그룹원 별 색상 매핑
         // assignMemberColors(schedules);
@@ -219,7 +222,6 @@ public class GroupPanel extends JPanel {
         }
     }
 
-    // TODO : 사용자 id로 색상을 구분하니 0 ~ 255 범위 이상임 -> HSB 변환
     /** 일정 ID 기반 해시 색상 생성 */
     // 렌덤으로 0 ~ 255
     private Color getColorForSchedule(String id) {
@@ -231,8 +233,6 @@ public class GroupPanel extends JPanel {
         int r = Math.abs((hash * 37) % 200 + 30);
         int g = Math.abs((hash * 67) % 200 + 30);
         int b = Math.abs((hash * 97) % 200 + 30);
-        System.out.println("id : " + id + "idH : " + id.hashCode() + " abs(h) :" + hash);
-        System.out.println("r : " + r + " g : " + g + " b : " + b);
         
         return new Color(r, g, b, 60); // 약간 투명하게
     }

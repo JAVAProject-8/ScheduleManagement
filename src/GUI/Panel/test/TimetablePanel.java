@@ -10,16 +10,11 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-// import java.time.format.DateTimeFormatter;
-import java.util.Random;
 
 public class TimetablePanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
-    private final TestDAO mockDAO = new TestDAO();
     private String userId = null;
-    private Random random = new Random();
-    private int rd = random.nextInt(256);
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
@@ -61,8 +56,10 @@ public class TimetablePanel extends JPanel {
         ScheduleCellRenderer scheduleRenderer = new ScheduleCellRenderer();
         for (int col = 1; col <= 7; col++) {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
-        }
+        }   
 
+        // 테이블 열 크기
+        table.setRowHeight(50);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -83,7 +80,7 @@ public class TimetablePanel extends JPanel {
 
     /** Mock DAO 데이터 로드 */
     private void loadTestData() {
-        ArrayList<Schedule> schedules = mockDAO.getPersonalSchedule(userId);
+        ArrayList<Schedule> schedules = TestDAO.getInstance().getPersonalSchedule(userId);
         for (Schedule s : schedules) {
             addScheduleToTable(s);
         }
@@ -145,7 +142,7 @@ public class TimetablePanel extends JPanel {
             if (value instanceof Schedule) {
                 Schedule s = (Schedule) value;
                 setText(s.getScheduleDescription());
-                c.setBackground(getColorForSchedule(rd));
+                c.setBackground(getColorForSchedule(s.getWriterId()));
             }
 
             return c;
@@ -154,10 +151,12 @@ public class TimetablePanel extends JPanel {
 
     /** 일정 ID 기반 해시 색상 생성 */
     // 렌덤으로 0 ~ 255 
-    private Color getColorForSchedule(int rd) {
-        int r = (rd * 37) % 200 + 30;
-        int g = (rd * 67) % 200 + 30;
-        int b = (rd * 97) % 200 + 30;
+    private Color getColorForSchedule(String id) {
+        int hash = Math.abs(id.hashCode());
+        int r = Math.abs((hash * 37) % 200 + 30);
+        int g = Math.abs((hash * 67) % 200 + 30);
+        int b = Math.abs((hash * 97) % 200 + 30);
+
         return new Color(r, g, b, 60); // 약간 투명하게
     }
 }
