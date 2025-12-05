@@ -1,21 +1,31 @@
 package GUI;
 
+import DB.Schedule;
+import DB.User;
+import DB.SDAO;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.border.EmptyBorder;
+import java.time.*;
 
 public class AddScheduleDialog extends JDialog implements ActionListener {
 	// 컴포넌트 필드 선언
 	JTextField startYearField, startMonthField, startDateField;	// 시작일자(년, 월, 일)
 	JTextField endYearField, endMonthField, endDateField;	// 종료일자(년, 월, 일)
 	JTextField startHourField, startMinuteField, endHourField, endMinuteField;	// 시작시간(시, 분), 종료시간(시, 분)
-	JTextField categoryField, descriptionField;	// 카테고리, 내용
+	JTextField typeField, descriptionField;	// 카테고리, 내용
 	JCheckBox weeklyCheckBox, monthlyCheckBox;	// 주 단위, 월 단위 반복 체크박스
 	JButton checkButton;	// 확인 버튼
 	
-	public AddScheduleDialog(JFrame frame, String title) {
+	User user = null;
+	Schedule schedule = null;
+	
+	public AddScheduleDialog(JFrame frame, String title, User _u) {
 		super(frame, title, true);
+		user = _u;
+		
 		setLayout(new BorderLayout(5, 5));
 		
 		// 라벨 패널
@@ -66,11 +76,11 @@ public class AddScheduleDialog extends JDialog implements ActionListener {
 		endDatePanel.add(new JLabel("분"));
 		
 		// 구분 패널
-		categoryField = new JTextField(10);
+		typeField = new JTextField(10);
 		
-		JPanel categoryPanel = new JPanel();
-		categoryPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		categoryPanel.add(categoryField);
+		JPanel typePanel = new JPanel();
+		typePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		typePanel.add(typeField);
 		
 		// 내용 패널
 		descriptionField = new JTextField(20);
@@ -84,7 +94,7 @@ public class AddScheduleDialog extends JDialog implements ActionListener {
 		fieldsPanel.setLayout(new GridLayout(4, 1, 0, 0));
 		fieldsPanel.add(startDatePanel);
 		fieldsPanel.add(endDatePanel);
-		fieldsPanel.add(categoryPanel);
+		fieldsPanel.add(typePanel);
 		fieldsPanel.add(descriptionPanel);
 		fieldsPanel.setBorder(new EmptyBorder(10, 0, 0, 10));
 		
@@ -124,11 +134,68 @@ public class AddScheduleDialog extends JDialog implements ActionListener {
 		setVisible(true);
 	}
 	
+	public AddScheduleDialog(JFrame frame, String title, User _u, Schedule _s) {
+		user = _u;
+		schedule = _s;
+	}
+	
 	public void actionPerformed(ActionEvent e) {
-		// 입력 유효성 검사 필요
-		// 필드에서 데이터를 가져와 String, LocateDateTime 변수에 담아 일정 객체 생성
-		// 생성한 일정 객체를 전달
-		// DB에 저장
-		// 저장 성공 시 JOptionPanel 출력
+		// 입력 유효성 검사	
+		int startYear, startMonth, startDate, startHour, startMinute, endYear, endMonth, endDate, endHour, endMinute;
+		
+		try {
+			startYear = Integer.parseInt(startYearField.getText());
+			startMonth = Integer.parseInt(startMonthField.getText());
+			startDate = Integer.parseInt(startDateField.getText());
+			startHour = Integer.parseInt(startHourField.getText());
+			startMinute = Integer.parseInt(startMinuteField.getText());
+			endYear = Integer.parseInt(endYearField.getText());
+			endMonth = Integer.parseInt(endMonthField.getText());
+			endDate = Integer.parseInt(endDateField.getText());
+			endHour = Integer.parseInt(endHourField.getText());
+			endMinute = Integer.parseInt(endMinuteField.getText());
+		}
+		catch(Exception exception) {
+			JOptionPane.showMessageDialog(null, "날짜, 시간 입력을 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		
+		// LocateDateTime 객체 생성
+		LocalDateTime startDateTime = LocalDateTime.of(startYear, startMonth, startDate, startHour, startMinute);
+		LocalDateTime endDateTime = LocalDateTime.of(endYear, endMonth, endDate, endHour, endMinute);
+		
+		// 구분 및 내용 저장
+		String type = typeField.getText().trim();
+		String description = descriptionField.getText().trim();
+		
+		// 입력 유효성 검사
+		if(type.equals("")) {
+			JOptionPane.showMessageDialog(null, "구분 입력을 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		else if(description.equals("")) {
+			JOptionPane.showMessageDialog(null, "내용 입력을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+	
+		Schedule newSchedule = new Schedule(user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
+
+		boolean result;
+		
+		if(schedule == null) {
+			result = SDAO.getInstance().insertSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 추가 성공 여부 반환
+		}
+		else {
+			result = SDAO.getInstance().updateSchedule(newSchedule);
+		}
+		
+		// 일정 추가 성공
+		if(result) {
+			JOptionPane.showMessageDialog(null, "일정 추가 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+		}
+		// 일정 추가 실패
+		else {
+			JOptionPane.showMessageDialog(null, "일정 추가 실패. 시간을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+		}
 	}
 }
