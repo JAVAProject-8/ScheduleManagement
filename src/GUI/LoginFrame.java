@@ -106,7 +106,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 			}
 			// 로그인 실패 시 안내 메시지 출력 후 재입력 요청
 			else {
-				JOptionPane.showMessageDialog(null, "로그인 실패", "Information", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "로그인 실패", "Warning", JOptionPane.WARNING_MESSAGE);
 			}
 		}
 		// 회원가입 버튼 클릭
