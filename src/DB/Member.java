@@ -1,10 +1,10 @@
 package DB;
 
 public class Member {
-    String user_id;	// 그룹원 id
+    String user_id;		// 그룹원 id
     String group_id;	// 그룹 id
     String is_admin;	// 관리자 권한
-    String task;	// 업무
+    String task;		// 업무
     String user_name;	// 유저 이름
 
     public Member(String user_id, String group_id, String is_admin, String task, String user_name) {
@@ -13,5 +13,13 @@ public class Member {
         this.is_admin = is_admin;
         this.task = task;
         this.user_name = user_name;
+    }
+    
+    public String getUserName() {
+    	return this.user_name;
+    }
+    
+    public String getTask() {
+    	return this.task;
     }
 }

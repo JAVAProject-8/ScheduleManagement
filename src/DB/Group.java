@@ -23,4 +23,9 @@ public class Group {
     public String getInviteCode() {
         return invite_code;
     }
+    
+    @Override
+    public String toString() {
+    	return this.group_name;
+    }
 }
