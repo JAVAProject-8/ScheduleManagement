@@ -1,12 +1,20 @@
 package GUI;
 
+import DB.User;
+import DB.Schedule;
+import DB.SDAO;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.border.EmptyBorder;
+
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class CheckScheduleDialog extends JDialog implements ActionListener {	
 	JComboBox<String> optionComboBox;	// 옵션 선택
@@ -18,9 +26,13 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 	
 	TableRowSorter<DefaultTableModel> sorter;	// 테이블 행 검색(필터)
 	DefaultTableModel tableModel;
+	ArrayList<Schedule> personalSchedules = null;
 	
-	public CheckScheduleDialog(JFrame frame, String title) {
+	User user = null;
+	
+	public CheckScheduleDialog(JFrame frame, String title, User _u) {
 		super(frame, title, true);
+		user = _u;
 		
 		String option[] = {"구분", "내용"};
 		optionComboBox = new JComboBox<>(option);
@@ -77,29 +89,55 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		searchPanel.add(bottomPanel, BorderLayout.SOUTH);
 		searchPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		
-		tableModel = new DefaultTableModel();
+		tableModel = new DefaultTableModel() {
+			public boolean isCellEditable(int r, int c) {	// 셀 수정 비활성화 처리
+				return false;
+			}
+		};
 		tableModel.addColumn("구분");
 		tableModel.addColumn("내용");
 		tableModel.addColumn("시작");
 		tableModel.addColumn("종료");
 		
-		// 테스트 모델
-		// DB에서 받은 일정 ArrayList를 바탕으로 테이블 모델을 생성하는 메소드 필요
-		for(int i = 1; i <= 12; i++) {
-			tableModel.addRow(new Object[] {"수업", i, "2025-01-01", "2025-12-31"});
+		// 별도의 메소드화 필요(갱신용)
+		personalSchedules = SDAO.getInstance().getSchedules(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 일정 ArrayList 반환 
+		
+		// DB에서 전달받은 ArrayList를 시작 시간을 기준으로 하여 정렬
+		Collections.sort(personalSchedules, new Comparator<Schedule>() {
+			@Override
+			public int compare(Schedule s1, Schedule s2) {
+				return s1.getStartAt().compareTo(s2.getStartAt());
+			}
+		});
+		
+		// 정렬한 ArrayList를 테이블 모델에 추가
+		for(int i = 0; i < personalSchedules.size(); i++) {
+			Object[] data = new Object[4];
+			
+			data[0] = personalSchedules.get(i).getScheduleType();
+			data[1] = personalSchedules.get(i).getScheduleDescription();
+			data[2] = personalSchedules.get(i).getStartAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			data[3] = personalSchedules.get(i).getEndAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			
+			tableModel.addRow(data);
 		}
+		
+//		// 테스트 모델
+//		for(int i = 1; i <= 12; i++) {
+//			tableModel.addRow(new Object[] {"수업", i, "2025-01-01", "2025-12-31"});
+//		}
 		
 		// 테이블 설정
 		scheduleTable = new JTable(tableModel);
 		scheduleTable.setDragEnabled(false);
 		sorter = new TableRowSorter<>(tableModel);
 		scheduleTable.setRowSorter(sorter);
-		//scheduleTable.setEnabled(false);
+		scheduleTable.getTableHeader().setReorderingAllowed(false);	// 열 순서 변경 금지 처리
+		scheduleTable.getTableHeader().setResizingAllowed(false);	// 열 너비 변경 금지 처리
 		
 		// 스크롤 패널 등록
 		JScrollPane scheduleScroll = new JScrollPane(scheduleTable);
 		scheduleScroll.setPreferredSize(new Dimension(0, 250));
-		//scheduleScroll.setBorder(new EmptyBorder(20, 20, 20, 20));
 		
 		// 버튼 패널
 		editButton = new JButton("수정");
@@ -158,25 +196,47 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 		// 일정 수정
 		else if(obj == editButton) {
-			// 테이블에서 선택한 행의 정보를 가져와서
-			// 자동완성을 지원하는 별도의 JDIalog 필요
-			// 입력 내용을 기반으로 일정 객체를 생성하여 DB에 전달
-			// DB에서 업데이트하고 성공 여부를 반환
-			// 성공 여부에 따라 JOptionPane 출력
+			int selectedIndex = scheduleTable.getSelectedRow();	// 선택한 행의 인덱스를 가져옴
+			
+			// 선택된 행이 있다면
+			if(selectedIndex != -1) {
+				int selectedModelIndex = scheduleTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
+				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
+				
+				// 자동완성을 지원하는 JDialog 필요. 인수로 일정 객체 전달
+				// 입력 내용을 기반으로 일정 객체를 수정하여 DB에 전달
+				// DB에서 업데이트하고 성공 여부를 반환
+				// 성공 여부에 따라 JOptionPane 출력
+			}
+			// 선택된 행이 없다면
+			else {
+				JOptionPane.showMessageDialog(null, "행을 선택해주세요.", "Information", JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 		// 일정 삭제
 		else if(obj == deleteButton) {
-			// 삭제 여부 재확인
-			int var = JOptionPane.showConfirmDialog(null, "정말 삭제하시겠습니까?", "삭제", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+			int selectedIndex = scheduleTable.getSelectedRow();	// 선택한 행의 인덱스를 가져옴
 			
-			if(var == JOptionPane.YES_OPTION) {
-				// 테이블에서 선택한 행의 정보를 가져와서
-				// 삭제할 일정의 id를 DB에 전달
-				// DB에서 삭제하고 성공 여부를 반환
-				// 성공 여부에 따라 JOptionPane 출력
-			}
-			else {
-				return;
+			// 선택된 행이 있다면
+			if(selectedIndex != -1) {
+				int selectedModelIndex = scheduleTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
+				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
+				
+				// 삭제 여부 재확인
+				int var = JOptionPane.showConfirmDialog(null, "정말 삭제하시겠습니까?", "삭제", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				
+				if(var == JOptionPane.YES_OPTION) {
+					boolean result = SDAO.getInstance().deleteSchedule(selectedSchedule.getScheduleId());	// 일정 아이디를 인수로 DAO 객체에서 일정 삭제 여부 반환
+					
+					// 삭제 성공
+					if(result) {
+						JOptionPane.showMessageDialog(null, "일정 삭제 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+					}
+					// 삭제 실패
+					else {
+						JOptionPane.showMessageDialog(null, "일정 삭제 실패. 다시 시도해 주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+					}
+				}
 			}
 		}
 	}
@@ -186,6 +246,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		
 		// 검색 옵션 설정
 		String inputText = inputField.getText().trim();	// 검색어 저장
+		
 		if(!inputText.equals("")) {		// 입력 내용이 있는 경우
 			String option = optionComboBox.getSelectedItem().toString();	// 선택한 옵션을 가져옴
 			int optionIndex = -1;
