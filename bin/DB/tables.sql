@@ -31,7 +31,7 @@ CREATE TABLE schedules (
     schedule_id int NOT NULL AUTO_INCREMENT,
     writer_id varchar(20) NOT NULL,
     group_id varchar(20) DEFAULT NULL,
-    schedule_name varchar(50) NOT NULL,
+    schedule_description varchar(50) NOT NULL,
     schedule_type varchar(10) NULL,
     start_at datetime NOT NULL,
     end_at datetime NOT NULL,
