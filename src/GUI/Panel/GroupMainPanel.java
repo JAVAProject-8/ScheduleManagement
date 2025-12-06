@@ -7,7 +7,6 @@ import DB.Group;
 import DB.Member;
 import DB.Memo;
 import DB.SDAO;
-import DB.Schedule;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -19,7 +18,6 @@ import javax.swing.border.EmptyBorder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Vector;
 import java.time.*;
 
 public class GroupMainPanel extends JPanel implements ActionListener {
@@ -28,10 +26,11 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 	JTextArea memoArea;			// 메모 출력
 	JTextField memoField;		// 메모 입력
 	JButton inputButton, updateTaskButton;	// 메모 입력, 업무 입력 버튼
-	JLabel groupNameLabel, groupInviteCodeLabel;
-	
+	JLabel groupInviteCodeLabel;
 	JTable groupMemberTable;	// 그룹원 테이블
 	DefaultTableModel tableModel;	// 테이블에 삽입할 기본 모델
+	
+	JPanel topPanel, memoPanel, groupMemberPanel;
 	
 	ArrayList<Group> groups = null;
 	ArrayList<Member> members = null;
@@ -44,11 +43,19 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		setLayout(new BorderLayout());
 		user = _u;
 		
-		if(setGroup()) {
-			return;
-		}
+		initComponent();	// 기본 컴포넌트 배치
+		refreshGroupList();	// 그룹 목록 새로고침
+	}
+	
+	// 컴포넌트 배치 메소드
+	private void initComponent() {
+		comboBoxModel = new DefaultComboBoxModel<>();		// 모델 생성
+		groupComboBox = new JComboBox<>(comboBoxModel);		// 생성한 모델로 콤보박스 생성
+		groupComboBox.setBackground(Color.WHITE);
+		groupComboBox.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
 		
-		setGroupInfo();
+		groupInviteCodeLabel = new JLabel("    초대 코드: ");
+		groupInviteCodeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
 		
 		updateTaskButton = new JButton("업무 입력");
 		updateTaskButton.setBackground(Color.WHITE);
@@ -66,7 +73,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		rightPanel.add(updateTaskButton);
 		
 		// 상단 패널
-		JPanel topPanel = new JPanel();
+		topPanel = new JPanel();
 		topPanel.setLayout(new BorderLayout());
 		topPanel.add(leftPanel, BorderLayout.WEST);
 		topPanel.add(rightPanel, BorderLayout.EAST);
@@ -87,13 +94,11 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		inputPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
 		
 		// 좌측 패널
-		JPanel memoPanel = new JPanel();
+		memoPanel = new JPanel();
 		memoPanel.setLayout(new BorderLayout());
 		memoPanel.add(new JScrollPane(memoArea), BorderLayout.CENTER);
 		memoPanel.add(inputPanel, BorderLayout.SOUTH);
 		memoPanel.setBorder(new EmptyBorder(0, 20, 20, 10));
-		
-		setGroupMemo();
 		
 		// 테스트 테이블 모델
 		tableModel = new DefaultTableModel() {
@@ -104,8 +109,6 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		};
 		tableModel.addColumn("이름");
 		tableModel.addColumn("업무");
-		
-		setGroupTask();
 		
 		// 테이블 설정
 		groupMemberTable = new JTable(tableModel);
@@ -144,7 +147,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		});
 		
 		// 우측 패널
-		JPanel groupMemberPanel = new JPanel();
+		groupMemberPanel = new JPanel();
 		groupMemberPanel.setLayout(new BorderLayout());
 		groupMemberPanel.add(new JScrollPane(groupMemberTable), BorderLayout.CENTER);
 		groupMemberPanel.setBorder(new EmptyBorder(0, 10, 20, 20));
@@ -153,24 +156,23 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		memoField.addActionListener(this);
 		inputButton.addActionListener(this);
 		updateTaskButton.addActionListener(this);
-		
-		// 최종 패널 추가
-		add(topPanel, BorderLayout.NORTH);
-		add(memoPanel, BorderLayout.WEST);
-		add(groupMemberPanel, BorderLayout.CENTER);
 	}
 	
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		
 		// 그룹 콤보박스 선택 시 
 		if(obj == groupComboBox) {
 			int selectedIndex = groupComboBox.getSelectedIndex();	// 인덱스를 가져옴
-			selectedGroup = groups.get(selectedIndex);	// 선택 그룹을 변경
 			
-			setGroupInfo();	// 그룹 정보 갱신
-			setGroupMemo();	// 그룹 메모 갱신
-			setGroupTask(); // 그룹 업무 갱신
+			if(selectedIndex != -1) {
+				selectedGroup = groups.get(selectedIndex);	// 선택 그룹을 변경
+				
+				setGroupInfo();	// 그룹 정보 갱신
+				setGroupMemo();	// 그룹 메모 갱신
+				setGroupTask(); // 그룹 업무 갱신
+			}
 		}
 		// 메모 입력 시
 		else if(obj == memoField || obj == inputButton) {
@@ -218,37 +220,51 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		}
 	}
 	
-	public boolean setGroup() {
+	public void refreshGroupList() {
 		groups = SDAO.getInstance().getMyGroups(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 그룹 ArrayList 반환
+		
+		this.removeAll();					// 모든 컴포넌트를 제거
+		comboBoxModel.removeAllElements();	// 모든 원소를 제거
 		
 		if(groups.size() == 0) {	// 사용자가 가입되어있는 그룹이 없는 경우
 			JLabel impormationLabel = new JLabel("초대 코드를 입력하여 그룹에 가입해주세요.", JLabel.CENTER);
 			impormationLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
 			add(impormationLabel, BorderLayout.CENTER);
-			return true;
+			selectedGroup = null;
+			
+			this.revalidate();	// 배치 정보 재계산
+			this.repaint();		// 재배치
+			
+			return;
 		}
 		
-		selectedGroup = groups.get(0);
+		// 패널 추가
+		add(topPanel, BorderLayout.NORTH);
+		add(memoPanel, BorderLayout.WEST);
+		add(groupMemberPanel, BorderLayout.CENTER);
 		
-		Vector<String> items = new Vector<>();	// Vector 선언
+		groupComboBox.removeActionListener(this);	// 리스너 임시 삭제
 		
 		for(int i = 0; i < groups.size(); i++) {
-			items.add(groups.get(i).getGroupName());	// 그룹 이름을 Vector에 추가
+			comboBoxModel.addElement(groups.get(i).getGroupName());	// 그룹 이름을 Vector에 추가
 		}
-		comboBoxModel = new DefaultComboBoxModel<>(items);	// Vector로 모델 생성
-		groupComboBox = new JComboBox<>(comboBoxModel);		// 생성한 모델로 콤보박스 생성
-		// 그룹 가입 시, 탈퇴 시 콤보박스 재선언 필요
 		
-		groupComboBox.setBackground(Color.WHITE);
-		groupComboBox.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+		groupComboBox.setSelectedIndex(0);
+		selectedGroup = groups.get(0);
 		
-		return false;
+		setGroupInfo();	// 그룹 정보 갱신
+		setGroupMemo();	// 그룹 메모 갱신
+		setGroupTask(); // 그룹 업무 갱신
+		
+		groupComboBox.addActionListener(this);	// 리스너 재등록
+		
+		this.revalidate();	// 배치 정보 재계산
+		this.repaint();		// 재배치
 	}
 	
 	// 그룹 정보 설정
 	public void setGroupInfo() {
-		groupInviteCodeLabel = new JLabel("\t초대 코드: " + selectedGroup.getInviteCode());
-		groupInviteCodeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+		groupInviteCodeLabel.setText("\t초대 코드: " + selectedGroup.getInviteCode());
 	}
 	
 	// 그룹 메모 설정
@@ -257,7 +273,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		
 		memos = SDAO.getInstance().getMemosByGroupId(selectedGroup.getGroupId());
 		
-		// DB에서 전달받은 ArrayList를 xxx을 기준으로 하여 정렬
+		// DB에서 전달받은 ArrayList를 작성시각을 기준으로 하여 정렬
 		Collections.sort(memos, new Comparator<Memo>() {
 			@Override
 			public int compare(Memo m1, Memo m2) {
@@ -271,6 +287,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 			String line = otherUser.getName() + "("
 					+ memos.get(i).getCreatedAt().format(DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")) + "): "
 					+ memos.get(i).getContent();
+			
 			memoArea.append(line + "\n");
 		}
 	}
