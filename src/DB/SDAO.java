@@ -143,16 +143,9 @@ public class SDAO {
                 if (rs.next()) {
                     user = new User();
                     user.setID(rs.getString("user_id"));
-                    user.setPW(rs.getString("password"));
                     user.setName(rs.getString("name"));
                     user.setOrganization(rs.getString("organization"));
-
-                    // Date -> LocalDate 변환
-                    java.sql.Date dbDate = rs.getDate("birth_date");
-                    if (dbDate != null) {
-                        user.setBirthDate(dbDate.toLocalDate());
-                    }
-
+                    user.setBirthDate(rs.getDate("birthdate").toLocalDate());
                     user.setPhoneNumber(rs.getString("phone"));
                     user.setEmail(rs.getString("email"));
                 }
@@ -399,8 +392,7 @@ public class SDAO {
     public ArrayList<Member> getMembersByGroupId(String groupId) {
         ArrayList<Member> list = new ArrayList<>();
 
-        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, "
-                + "u.name " // User 테이블에서 이름 가져오기
+        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task u.name "
                 + "FROM group_members m "
                 + "JOIN users u ON m.user_id = u.user_id "
                 + "WHERE m.group_id = ? "
@@ -511,14 +503,14 @@ public class SDAO {
     // 기능: 그룹 탈퇴
     // 매개변수: 탈퇴할 유저ID, 탈퇴할 그룹ID
     // 반환값: true(성공), false(실패)
-    public boolean leaveGroup(String userId, int groupId) {
+    public boolean leaveGroup(String userId, String groupId) {
         String sql = "DELETE FROM group_members WHERE user_id = ? AND group_id = ?";
 
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, userId);
-            pstmt.setInt(2, groupId);
+            pstmt.setString(2, groupId);
 
             int result = pstmt.executeUpdate();
 
@@ -566,8 +558,7 @@ public class SDAO {
         ArrayList<Schedule> list = new ArrayList<>();
 
         // 오늘 날짜에 포함되는 일정 조회
-        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, "
-                + "start_at, end_at "
+        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, start_at, end_at "
                 + "FROM schedules "
                 + "WHERE writer_id = ? "
                 + "ORDER BY start_at ASC";
@@ -793,7 +784,7 @@ public class SDAO {
         ArrayList<Memo> list = new ArrayList<>();
 
         // 해당 그룹의 메모 불러오기
-        String sql = "SELECT memo_id, group_id, writer_id, content, created_at"
+        String sql = "SELECT memo_id, group_id, writer_id, content, created_at "
                 + "FROM memos "
                 + "WHERE group_id = ? "
                 + "ORDER BY created_at DESC";
