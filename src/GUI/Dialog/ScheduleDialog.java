@@ -56,7 +56,8 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 	}
 	
 	// 일정 수정 생성자
-	public ScheduleDialog(JFrame frame, String title, User _u, Schedule _s) {
+	public ScheduleDialog(Frame frame, String title, User _u, Schedule _s) {
+		super(frame, title, true);
 		user = _u;
 		schedule = _s;
 		
@@ -231,18 +232,18 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 			JOptionPane.showMessageDialog(null, "내용 입력을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-	
-		Schedule newSchedule = new Schedule(user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 
 		boolean result;
 		
 		// 일정 추가인 경우
 		if(schedule == null) {
+			Schedule newSchedule = new Schedule(user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 			result = SDAO.getInstance().insertSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 추가 성공 여부 반환
 			
 			// 일정 추가 성공
 			if(result) {
 				JOptionPane.showMessageDialog(null, "일정 추가 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				dispose();
 			}
 			// 일정 추가 실패
 			else {
@@ -251,16 +252,18 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		}
 		// 일정 수정인 경우
 		else {
+			Schedule newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 			result = SDAO.getInstance().updateSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 수정 성공 여부 반환
 			
 			// 일정 수정 성공
 			if(result) {
-				JOptionPane.showMessageDialog(null, "일정 추가 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showMessageDialog(null, "일정 수정 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				dispose();
 			}
 			// 일정 수정 실패
 			else {
-				JOptionPane.showMessageDialog(null, "일정 추가 실패. 시간을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "일정 수정 실패. 시간을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			}
-		}		
+		}
 	}
 }
