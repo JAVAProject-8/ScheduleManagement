@@ -11,7 +11,9 @@ import DB.User;
 import java.awt.*;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 
 public class TimetablePanel extends JPanel {
     private JTable table;
@@ -50,11 +52,7 @@ public class TimetablePanel extends JPanel {
             model.setValueAt(String.format("%02d:30", hour), i, 0);
         }
 
-        // 일정 표시용 렌더러 적용
-        // 전체 컬럼에 렌더러 적용 -> 버그 발생
-        // table.setDefaultRenderer(Object.class, new ScheduleCellRenderer());
-        
-        // 해결 방안 -> 요일 컬럼(1~7)에만 일정 렌더러 적용
+        // 요일 컬럼(1~7)에만 일정 렌더러 적용
         ScheduleCellRenderer scheduleRenderer = new ScheduleCellRenderer();
         for (int col = 1; col <= 7; col++) {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
@@ -80,16 +78,39 @@ public class TimetablePanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    /** Mock DAO 데이터 로드 */
+    /** DAO 데이터 로드 */
     private void loadTestData() {
+        LocalDate today = LocalDate.now(); // 오늘 날짜
+    
         ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(u.getID());
         for (Schedule s : schedules) {
-            System.out.println(s.getScheduleId() + " = " + s.getStartAt().getDayOfMonth() + " ~ " + s.getEndAt().getDayOfMonth());
+            System.out.println(s.getScheduleId() + ", " + s.getScheduleDescription() + ", " + s.getStartAt().toLocalDate() + ", " + s.getStartAt());
+            // System.out.println(s.getScheduleId() + " = " + s.getStartAt().getDayOfMonth() + " ~ " + s.getEndAt().getDayOfMonth());
             // if (u.getID() == s.getWriterId()) addScheduleToTable(s);
-            addScheduleToTable(s);
+            // startOfWeek <= x <= endOfWeek
+            if (isDateInCurrentWeek(today)) addScheduleToTable(s);
         }
     }
+    
+    // today가 요번주에 포함되는지 검사
+    // 포함에면 t, 아니면 f
+    public static boolean isDateInCurrentWeek(LocalDate date) {
+        LocalDate today = LocalDate.now();
 
+        // 이번 주의 첫 번째 날 (월요일) 구하기
+        // previousOrSame(MONDAY)는 오늘이 월요일이면 오늘, 아니면 지난 월요일을 반환
+        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // 이번 주의 마지막 날 (일요일) 구하기
+        // nextOrSame(SUNDAY)는 오늘이 일요일이면 오늘, 아니면 다음 일요일을 반환
+        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        // 확인할 날짜가 시작일(포함)과 마지막 날(포함) 사이에 있는지 확인
+        // System.out.println("오늘 " + today + ", 월 " + firstDayOfWeek + ", 일" + lastDayOfWeek + " -> " + date);
+        return !(date.isBefore(firstDayOfWeek) || date.isAfter(lastDayOfWeek));
+    }
+
+    // TODO : 당일 일주일만 표시
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
         LocalDateTime start = schedule.getStartAt();
@@ -112,17 +133,6 @@ public class TimetablePanel extends JPanel {
             model.setValueAt(schedule, row, col);
         }
     }
-
-    /**
-     * yyyy-MM-dd HH:mm 파싱
-     * 
-     * @param dt yyyy-MM-dd HH:mm 형식에 날짜+시간
-     * @return 날짜 반환
-     */
-    /* private LocalDateTime parseDateTime(String dt) {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(dt, fmt);
-    } */
 
     // 요일 -> 컬럼 변환 (월 1 ... 일 7)
     private int dayOfWeekToColumn(DayOfWeek dow) {

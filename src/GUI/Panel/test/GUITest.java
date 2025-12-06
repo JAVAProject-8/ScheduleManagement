@@ -3,11 +3,11 @@ package GUI.Panel.test;
 import javax.swing.*;
 
 import DB.User;
-// import GUI.Panel.MainPanel;
+import GUI.Panel.CalendarPanel;
+import GUI.Panel.TimetablePanel;
 
 import java.awt.*;
-// import DB.SDAO;
-// import GUI.Panel.MainPanel;
+
 
 // 패널들 테스트용 프래임
 public class GUITest {
@@ -27,10 +27,10 @@ class TestFrame extends JFrame {
     
     // 구현 완료
     // private MainPanel p = new MainPanel(u);
-    // private TimetablePanel p = new TimetablePanel(u);
+    private TimetablePanel p = new TimetablePanel(u);
     // private GroupPanel p = new GroupPanel(u);
     
-    private CalendarPanel p = new CalendarPanel(u);
+    // private CalendarPanel p = new CalendarPanel(u);
 
     public TestFrame() {
         Container ct = getContentPane();
