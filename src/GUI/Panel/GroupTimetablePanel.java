@@ -7,10 +7,12 @@ import DB.Group;
 import DB.SDAO;
 import DB.Schedule;
 import DB.User;
+import DB.Member;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 public class GroupTimetablePanel extends JPanel implements ActionListener {
@@ -23,7 +25,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
     private final int START_HOUR = 9;
-    private final int END_HOUR = 18;
+    private final int END_HOUR = 23;
 
     private JPanel topPanel;
     private JScrollPane tableScrollPane;
@@ -102,10 +104,12 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
     	
     	if(selectedIndex != -1) {
 	    	selectedGroup = groups.get(selectedIndex);
+            System.out.println("선택 : " + selectedGroup.getGroupId());
 	    	loadSchedulesForGroup();
     	}
     }
 
+    // 테이블 초기화
     private void initTable() {
         int rows = END_HOUR - START_HOUR + 1;
 
@@ -124,11 +128,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
             model.setValueAt(String.format("%02d:30", hour), i, 0);
         }
 
-        // 일정 표시용 렌더러 적용
-        // 전체 컬럼에 렌더러 적용 -> 버그 발생
-        // table.setDefaultRenderer(Object.class, new ScheduleCellRenderer());
-
-        // 해결 방안 -> 요일 컬럼(1~7)에만 일정 렌더러 적용
+        // 요일 컬럼(1~7)에만 일정 렌더러 적용
         GroupScheduleRenderer scheduleRenderer = new GroupScheduleRenderer();
         for (int col = 1; col <= 7; col++) {
             table.getColumnModel().getColumn(col).setCellRenderer(scheduleRenderer);
@@ -154,9 +154,8 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         tableScrollPane = new JScrollPane(table);
     }
 
-    /** Mock DAO로 그룹 목록 가져오기 */
+    /** DAO로 그룹 목록 가져오기 */
     private void loadGroupList() {
-        //groups = SDAO.getInstance().getMyGroups(u.getID());
         for (Group g : groups) {
             //groupComboBox.addItem(g.getGroupName());
         	comboBoxModel.addElement(g.getGroupName());
@@ -165,23 +164,71 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 
     /** 특정 그룹의 전체 일정 로드 */
     private void loadSchedulesForGroup() {
+        // 테이블의 기존 일정을 모두 초기화함
         clearTable();
         
-        // 그룹 일정 로드
+        // 선택된 그룹 기준으로 그룹에 속한 멤버 목록 조회
+        ArrayList<Member> members = SDAO.getInstance().getMembersByGroupId(selectedGroup.getGroupId());
+        
+        // 조회된 그룹원 각각의 일정 조회
+        for (Member m : members) {
+            // System.out.println(m.getUserId());
+            // 해당 유저가 선택된 그룹에서 작성한 일정만 조회
+            ArrayList<Schedule> schedules = SDAO.getInstance().getSchedulesByUserAndGroup(m.getUserId(), selectedGroup.getGroupId());
+
+            // System.out.println(" member=" + m.getUserId() + ", schedules=" + (schedules == null ? 0 : schedules.size()));
+            
+            // 조회된 일정들을 테이블에 배치
+            for (Schedule s : schedules) {
+                // addScheduleToTable(s);
+                
+                // 이번 주에 포함되는 일정인지 필터링
+                if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) {
+                    // System.out.println(" Adding schedule: " + s + " groupID= " + s.getGroupId() + " uid= " + s.getWriterId() + " start=" + s.getStartAt());
+                    // 필터 통과한 일정을 테이블에 실제 배치
+                    addScheduleToTable(s);
+                }
+                // 이번 주 일정이 아닌 경우 로그 출력
+                else System.out.println(s.getScheduleId() + ", " + s.getWriterId() + "는 요번주에 포함 하지 않음");
+            }
+
+        }
+        /* 
         ArrayList<Schedule> schedules = SDAO.getInstance().getGroupSchedules(selectedGroup.getGroupId());
 
         // 테이블 배치
         for (Schedule s : schedules) {
-            addScheduleToTable(s);
-        }
-
+            if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) addScheduleToTable(s);
+        } 
+        */
+        
+        // UI 강제 갱신
         table.repaint();
+    }
+
+    // today가 요번주에 포함되는지 검사
+    // 포함에면 t, 아니면 f
+    private static boolean isDateInCurrentWeek(LocalDate date) {
+        LocalDate today = LocalDate.now();
+
+        // 이번 주의 첫 번째 날 (월요일) 구하기
+        // previousOrSame(MONDAY)는 오늘이 월요일이면 오늘, 아니면 지난 월요일을 반환
+        LocalDate firstDayOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // 이번 주의 마지막 날 (일요일) 구하기
+        // nextOrSame(SUNDAY)는 오늘이 일요일이면 오늘, 아니면 다음 일요일을 반환
+        LocalDate lastDayOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        // 확인할 날짜가 시작일(포함)과 마지막 날(포함) 사이에 있는지 확인
+        return !(date.isBefore(firstDayOfWeek) || date.isAfter(lastDayOfWeek));
     }
 
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
+
+        System.out.println("add : " + schedule.getScheduleId());
 
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
@@ -207,7 +254,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 
     /** 시간표 초기화 */
     private void clearTable() {
-        for (int row = 0; row < 10; row++) {
+        for (int row = 0; row < (END_HOUR - START_HOUR + 1); row++) {
             for (int col = 1; col <= 7; col++) {
                 model.setValueAt("", row, col);
             }
