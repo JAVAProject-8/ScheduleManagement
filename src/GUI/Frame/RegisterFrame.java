@@ -11,14 +11,14 @@ import javax.swing.border.EmptyBorder;
 import java.time.*;
 
 public class RegisterFrame extends JFrame implements ActionListener {
-	JTextField IDField, nameField, organizationField; // 아이디, 이름, 소속
-	JTextField birthYearField, birthMonthField, birthDateField;	// 생년월일
+	JTextField IDField, nameField, organizationField; 					// 아이디, 이름, 소속
+	JTextField birthYearField, birthMonthField, birthDateField;			// 생년월일
 	JTextField phoneNumberField1, phoneNumberField2, phoneNumberField3;	// 전화번호
-	JTextField emailLocalField, emailDomainField;	// 이메일 로컬, 도메인
-	JComboBox<String> emailComboBox;		// 도메인 콤보 박스
-	JPasswordField PWField, PWCheckField;	// 비밀번호, 비밀번호 확인
-	JLabel PWStateLabel;	// 비밀번호 일치 여부 확인 라벨
-	JButton checkButton, duplicationButton;	// 중복검사, 확인 버튼
+	JTextField emailLocalField, emailDomainField;		// 이메일 로컬, 도메인
+	JComboBox<String> emailComboBox;					// 도메인 콤보 박스
+	JPasswordField PWField, PWCheckField;				// 비밀번호, 비밀번호 확인
+	JLabel PWStateLabel;								// 비밀번호 일치 여부 확인 라벨
+	JButton checkButton, duplicationButton, exitButton;	// 중복검사, 확인 버튼
 	
 	LoginFrame loginFrame;
 	boolean duplicationCheckFlag = false;	// 중복 검사 확인 플래그
@@ -142,9 +142,6 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		String domain[] = {"naver.com", "gmail.com", "daum.net", "sunmoon.ac.kr", "직접 입력"};
 		emailComboBox = new JComboBox<>(domain);
 		emailComboBox.setBackground(Color.WHITE);
-//		for(int i = 0; i < domain.length; i++) {
-//			emailComboBox.addItem(domain[i]);
-//		}
 		
 		JPanel emailPanel = new JPanel();
 		emailPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -158,8 +155,14 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		checkButton.setBackground(Color.WHITE);
 		checkButton.setFocusPainted(false);
 		
+		exitButton = new JButton("뒤로가기");
+		exitButton.setBackground(Color.WHITE);
+		exitButton.setFocusPainted(false);
+		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(checkButton);
+		buttonPanel.add(new JLabel("          "));
+		buttonPanel.add(exitButton);
 		
 		// 좌측 필드 패널
 		JPanel fieldsPanel2 = new JPanel();
@@ -190,6 +193,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		duplicationButton.addActionListener(this);
 		emailComboBox.addActionListener(this);
 		checkButton.addActionListener(this);
+		exitButton.addActionListener(this);
 		
 		// 익명 객체 사용
 		IDField.getDocument().addDocumentListener(new DocumentListener() {	// 중복 검사 이후 아이디 변경 확인
@@ -365,6 +369,11 @@ public class RegisterFrame extends JFrame implements ActionListener {
 				// 알수 없는 이유로 회원가입 실패 시 재시도 요청
 				JOptionPane.showMessageDialog(null, "알 수 없는 이유로 회원가입에 실패했습니다. 다시 시도해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			}
+		}
+		// 뒤로가기 버튼 클릭 시
+		else if(obj == exitButton) {
+			dispose();
+			loginFrame.setVisible(true);
 		}
 	}
 }

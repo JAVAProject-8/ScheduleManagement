@@ -11,9 +11,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Vector;
-
-import javax.swing.border.EmptyBorder;
 
 public class MainFrame extends JFrame implements ActionListener {
 	public User user = null;
@@ -114,12 +111,12 @@ public class MainFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// 그룹 아이디와 그룹 명, 사용자 ID를 DB에 전달(수정 필요)
-			boolean result = SDAO.getInstance().createGroup(groupId, groupName, user.getID());	//
+			boolean result = SDAO.getInstance().createGroup(groupId, groupName, user.getID());	// 그룹 아이디와 그룹명, 사용자 아이디를 인수로 DAO 객체에서 그룹 생성 성공 여부 반환
 			
 			// 그룹 생성 성공
 			if(result) {
 				JOptionPane.showMessageDialog(null, "그룹 생성 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
 			}
 			// 그룹 생성 실패
 			else {
@@ -137,6 +134,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 그룹 가입 성공
 			if(result == 1) {
 				JOptionPane.showMessageDialog(null, "그룹 가입 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
 			}
 			// 초대 코드 오류, 그룹 가입 실패
 			else if(result == 0) {
@@ -152,16 +150,18 @@ public class MainFrame extends JFrame implements ActionListener {
 			Object[] options = groups.toArray();	// ArrayList를 Object 배열로 변환
 			Group selectedGroup = (Group)JOptionPane.showInputDialog(null, "탈퇴할 그룹을 선택해주세요", "그룹 탈퇴", JOptionPane.QUESTION_MESSAGE, null, options, null);
 			
-			boolean result = SDAO.getInstance().leaveGroup(user.getID(), selectedGroup.getGroupId());	// 사용자 아이디와 그룹 아이디를 인수로 DAO 객체에서 그룹 탈퇴 성공 여부 반환
-			
-			// 그룹 탈퇴 성공 시
-			if(result) {
-				JOptionPane.showMessageDialog(null, "그룹 탈퇴 성공", "Information", JOptionPane.PLAIN_MESSAGE);
-				//groupMainPanel.setGroup();	// 현재 그룹 목록 갱신
-			}
-			// 그룹 탈퇴 실패 시
-			else {
-				JOptionPane.showMessageDialog(null, "그룹 탈퇴 실패(예상치 못한 오류)", "Warning", JOptionPane.WARNING_MESSAGE);
+			if(selectedGroup != null) {
+				boolean result = SDAO.getInstance().leaveGroup(user.getID(), selectedGroup.getGroupId());	// 사용자 아이디와 그룹 아이디를 인수로 DAO 객체에서 그룹 탈퇴 성공 여부 반환
+				
+				// 그룹 탈퇴 성공 시
+				if(result) {
+					JOptionPane.showMessageDialog(null, "그룹 탈퇴 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+					groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
+				}
+				// 그룹 탈퇴 실패 시
+				else {
+					JOptionPane.showMessageDialog(null, "그룹 탈퇴 실패(예상치 못한 오류)", "Warning", JOptionPane.WARNING_MESSAGE);
+				}
 			}
 		}
 		else if(command.equals("사용자 정보 관리")) {
