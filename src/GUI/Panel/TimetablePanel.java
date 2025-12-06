@@ -80,21 +80,16 @@ public class TimetablePanel extends JPanel {
 
     /** DAO 데이터 로드 */
     private void loadTestData() {
-        LocalDate today = LocalDate.now(); // 오늘 날짜
-    
         ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(u.getID());
         for (Schedule s : schedules) {
-            System.out.println(s.getScheduleId() + ", " + s.getScheduleDescription() + ", " + s.getStartAt().toLocalDate() + ", " + s.getStartAt());
-            // System.out.println(s.getScheduleId() + " = " + s.getStartAt().getDayOfMonth() + " ~ " + s.getEndAt().getDayOfMonth());
-            // if (u.getID() == s.getWriterId()) addScheduleToTable(s);
             // startOfWeek <= x <= endOfWeek
-            if (isDateInCurrentWeek(today)) addScheduleToTable(s);
+            if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) addScheduleToTable(s);
         }
     }
     
     // today가 요번주에 포함되는지 검사
     // 포함에면 t, 아니면 f
-    public static boolean isDateInCurrentWeek(LocalDate date) {
+    private static boolean isDateInCurrentWeek(LocalDate date) {
         LocalDate today = LocalDate.now();
 
         // 이번 주의 첫 번째 날 (월요일) 구하기
@@ -106,13 +101,12 @@ public class TimetablePanel extends JPanel {
         LocalDate lastDayOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
 
         // 확인할 날짜가 시작일(포함)과 마지막 날(포함) 사이에 있는지 확인
-        // System.out.println("오늘 " + today + ", 월 " + firstDayOfWeek + ", 일" + lastDayOfWeek + " -> " + date);
         return !(date.isBefore(firstDayOfWeek) || date.isAfter(lastDayOfWeek));
     }
 
-    // TODO : 당일 일주일만 표시
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
+        System.out.println(schedule.getScheduleId() + ", " + schedule.getScheduleDescription() + ", " + schedule.getStartAt().toLocalDate() + ", " + schedule.getStartAt());
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
         
