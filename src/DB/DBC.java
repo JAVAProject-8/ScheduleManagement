@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class DBC {
     public static final String databaseDriver = "com.mysql.cj.jdbc.Driver";
-    public static final String databaseUrl = "jdbc:mysql://localhost:3306/ScheduleManagement?serverTimezone=UTC&characterEncoding=UTF8&useSSL=false";
+    public static final String databaseUrl = "jdbc:mysql://localhost:3306/ScheduleManagement?serverTimezone=Asia/Seoul&characterEncoding=UTF8&useSSL=false";
     public static final String databaseUser = "root";
     public static final String databasePassword = "본인 비밀번호";
     
