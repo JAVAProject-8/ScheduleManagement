@@ -253,7 +253,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		}
 		// 일정 수정의 경우
 		else {
-			Schedule newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
+			Schedule newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), schedule.getGroupId(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 			result = SDAO.getInstance().updateSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 수정 성공 여부 반환
 			
 			// 일정 수정 성공
