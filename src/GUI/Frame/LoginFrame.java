@@ -9,14 +9,16 @@ import java.awt.event.*;
 import javax.swing.border.EmptyBorder;
 
 public class LoginFrame extends JFrame implements ActionListener {
-	JTextField IDField;
-	JPasswordField PWField;
-	JButton loginButton, registerButton;
+	JTextField IDField;			// 아이디 입력 필드
+	JPasswordField PWField;		// 비밀번호 입력 필드
+	JButton loginButton, registerButton;	// 로그인, 회원가입 버튼
 	
+	// 생성자
 	public LoginFrame() {
 		Container ct = getContentPane();
 		ct.setLayout(new BorderLayout(0, 10));
 		
+		// 상단 라벨
 		JLabel topLabel = new JLabel("일정 관리 프로그램", JLabel.CENTER);
 		topLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 25));
 		topLabel.setBorder(new EmptyBorder(30, 0, 20, 0));
@@ -24,6 +26,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		JLabel IDLabel = new JLabel("ID", JLabel.RIGHT);
 		JLabel PWLabel = new JLabel("PW", JLabel.RIGHT);
 		
+		// 좌측 라벨 패널
 		JPanel labelsPanel = new JPanel();
 		labelsPanel.setLayout(new GridLayout(2, 1, 0, 5));
 		labelsPanel.add(IDLabel);	// 두 레이블을 2*1 판넬에 추가
@@ -32,6 +35,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		IDField = new JTextField(15);
 		PWField = new JPasswordField(15);
 		
+		// 우측 필드 패널
 		JPanel fieldsPanel = new JPanel();
 		fieldsPanel.setLayout(new GridLayout(2, 1, 0, 5));
 		fieldsPanel.add(IDField);	// 두 필드를 2*1 판넬에 추가
@@ -54,8 +58,8 @@ public class LoginFrame extends JFrame implements ActionListener {
 		registerButton.setBackground(Color.WHITE);
 		registerButton.setFocusPainted(false);
 		
+		// 메인 패널
 		JPanel mainPanel = new JPanel();
-		
 		mainPanel.setLayout(new FlowLayout());
 		mainPanel.add(inputPanel);
 		mainPanel.add(loginButton);
@@ -69,6 +73,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		ct.add(mainPanel, BorderLayout.CENTER);
 		ct.add(bottomPanel, BorderLayout.SOUTH);
 		
+		// ActionListener 등록
 		PWField.addActionListener(this);
 		loginButton.addActionListener(this);
 		registerButton.addActionListener(this);
@@ -78,7 +83,7 @@ public class LoginFrame extends JFrame implements ActionListener {
 		setResizable(false);	// 크기 조정
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
-		setVisible(true);
+		setVisible(true);	// 활성화
 	}
 	
 	public void actionPerformed(ActionEvent e) {

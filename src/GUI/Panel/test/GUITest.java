@@ -1,6 +1,10 @@
 package GUI.Panel.test;
 
 import javax.swing.*;
+
+import DB.User;
+// import GUI.Panel.MainPanel;
+
 import java.awt.*;
 // import DB.SDAO;
 // import GUI.Panel.MainPanel;
@@ -19,13 +23,14 @@ public class GUITest {
 }
 
 class TestFrame extends JFrame {
-    // private SDAO sdao = new SDAO();
-    // 구현 완료
-    // private MainPanel p = new MainPanel("id1");
-    // private TimetablePanel p = new TimetablePanel("id12");
-    // private GroupPanel p = new GroupPanel("id12");
+    private User u = new User("busy_man");
     
-    private CalendarPanel p = new CalendarPanel("id1");
+    // 구현 완료
+    // private MainPanel p = new MainPanel(u);
+    // private TimetablePanel p = new TimetablePanel(u);
+    // private GroupPanel p = new GroupPanel(u);
+    
+    private CalendarPanel p = new CalendarPanel(u);
 
     public TestFrame() {
         Container ct = getContentPane();

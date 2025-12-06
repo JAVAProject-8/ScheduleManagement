@@ -87,7 +87,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		setResizable(false);	// 크기 조정 불가
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
-		setVisible(true);
+		//setVisible(true);
 	}
 	
 	// UI 초기화
@@ -150,6 +150,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 
         // 내용 패널
         descriptionField = new JTextField(20);
+        descriptionField.addActionListener(this);
 
         JPanel descriptionPanel = new JPanel();
         descriptionPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -235,7 +236,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 
 		boolean result;
 		
-		// 일정 추가인 경우
+		// 일정 추가의 경우
 		if(schedule == null) {
 			Schedule newSchedule = new Schedule(user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 			result = SDAO.getInstance().insertSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 추가 성공 여부 반환
@@ -250,7 +251,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 				JOptionPane.showMessageDialog(null, "일정 추가 실패. 시간을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			}
 		}
-		// 일정 수정인 경우
+		// 일정 수정의 경우
 		else {
 			Schedule newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
 			result = SDAO.getInstance().updateSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 수정 성공 여부 반환

@@ -25,7 +25,7 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 	User user = null;
 	StringTokenizer st = null;
 	
-	// 생성자(자동 완성을 위해 현재 로그인 한 User 객체를 전달받아야 함
+	// 생성자(자동 완성을 위해 현재 로그인 한 User 객체를 전달받아야 함)
 	public EditUserInfoDialog(MainFrame frame, String title, User _u) {
 		super(frame, title, true);
 		user = _u;
