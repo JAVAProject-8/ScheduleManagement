@@ -175,12 +175,13 @@ public class CalendarPanel extends JPanel {
         if (result == JOptionPane.NO_OPTION) {
             // 수정할 일정을 선택하고, 가져온 일정 리스트 크기가 0 이상이면
             if (selectedSchedule != null && data.size() > 0) {
-                new ScheduleDialog(
+                ScheduleDialog scheduleDialog = new ScheduleDialog(
                     null, 
                     "일정 수정",
                     u,
                     selectedSchedule
                 );
+                scheduleDialog.setVisible(true);
                 // System.out.println(day + "일 일정 수정 완료");
             }
             
@@ -188,7 +189,7 @@ public class CalendarPanel extends JPanel {
             else if (data.size() == 0) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "수정할 일정을 없습니다.",
+                        "수정할 일정이 없습니다.",
                         "경고",
                         JOptionPane.WARNING_MESSAGE);
                 return;
