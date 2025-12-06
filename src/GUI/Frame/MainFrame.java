@@ -20,7 +20,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	TimetablePanel timeTablePanel = null;
 	CalendarPanel calendarPanel = null;
 	GroupMainPanel groupMainPanel = null;
-	GroupPanel groupPanel = null;
+	GroupTimetablePanel groupTimetablePanel = null;
 	
 	public MainFrame(User _u) {
 		Container ct = getContentPane();
@@ -71,13 +71,13 @@ public class MainFrame extends JFrame implements ActionListener {
 		timeTablePanel = new TimetablePanel(user);
 		calendarPanel = new CalendarPanel(user);
 		groupMainPanel = new GroupMainPanel(user);
-		groupPanel = new GroupPanel(user);
+		groupTimetablePanel = new GroupTimetablePanel(user);
 		
 		tabbedPane.addTab("메인", mainPanel);
 		tabbedPane.addTab("시간표", timeTablePanel);
 		tabbedPane.addTab("캘린더", calendarPanel);
 		tabbedPane.addTab("그룹 메인", groupMainPanel);
-		tabbedPane.addTab("그룹 시간표", groupPanel);
+		tabbedPane.addTab("그룹 시간표", groupTimetablePanel);
 		
 		// ActionListener 등록
 		addScheduleMenuItem.addActionListener(this);
@@ -124,7 +124,8 @@ public class MainFrame extends JFrame implements ActionListener {
 			// 그룹 생성 성공
 			if(result) {
 				JOptionPane.showMessageDialog(null, "그룹 생성 성공", "Information", JOptionPane.PLAIN_MESSAGE);
-				groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
+				groupMainPanel.refreshGroupList();		// 현재 그룹 목록 갱신
+				groupTimetablePanel.refreshGroupList();
 			}
 			// 그룹 생성 실패
 			else {
@@ -143,6 +144,7 @@ public class MainFrame extends JFrame implements ActionListener {
 			if(result == 1) {
 				JOptionPane.showMessageDialog(null, "그룹 가입 성공", "Information", JOptionPane.PLAIN_MESSAGE);
 				groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
+				groupTimetablePanel.refreshGroupList();
 			}
 			// 초대 코드 오류, 그룹 가입 실패
 			else if(result == 0) {
@@ -165,6 +167,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				if(result) {
 					JOptionPane.showMessageDialog(null, "그룹 탈퇴 성공", "Information", JOptionPane.PLAIN_MESSAGE);
 					groupMainPanel.refreshGroupList();	// 현재 그룹 목록 갱신
+					groupTimetablePanel.refreshGroupList();
 				}
 				// 그룹 탈퇴 실패 시
 				else {

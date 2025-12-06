@@ -5,16 +5,17 @@ import javax.swing.table.*;
 
 import DB.Group;
 import DB.SDAO;
-// import DB.SDAO;
 import DB.Schedule;
 import DB.User;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.time.*;
 import java.util.*;
 
-public class GroupPanel extends JPanel {
+public class GroupTimetablePanel extends JPanel implements ActionListener {
     private JComboBox<String> groupComboBox;
+    private DefaultComboBoxModel<String> comboBoxModel;
     private JTable table;
     private DefaultTableModel model;
     private User u = null;
@@ -22,36 +23,87 @@ public class GroupPanel extends JPanel {
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
     private final int START_HOUR = 9;
-    private final int END_HOUR = 23;
+    private final int END_HOUR = 18;
 
+    private JPanel topPanel;
+    private JScrollPane tableScrollPane;
+    
     private Map<String, Color> memberColorMap = new HashMap<>();
-
-    public GroupPanel(User u) {
-        this.u = u;
-
+    private ArrayList<Group> groups = null;
+    
+    private Group selectedGroup = null;
+    
+    public GroupTimetablePanel(User u) {
         setLayout(new BorderLayout());
+        this.u = u;
         
-        // 상단 패널 - 그룹 선택 콤보박스
-        JPanel topPanel = new JPanel();
-        topPanel.add(new JLabel("그룹 선택"));
-        groupComboBox = new JComboBox<>();
+        initComponent();
+        refreshGroupList();
+    }
+    
+    private void initComponent() {
+    	// 상단 패널 - 그룹 선택 콤보박스
+    	JLabel informationLabel = new JLabel("그룹 선택: ");
+    	informationLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+    	
+    	comboBoxModel = new DefaultComboBoxModel<>();
+        groupComboBox = new JComboBox<>(comboBoxModel);
+        groupComboBox.setBackground(Color.WHITE);
+		groupComboBox.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
         
+        topPanel = new JPanel();
+        topPanel.add(informationLabel);
         topPanel.add(groupComboBox);
-        add(topPanel, BorderLayout.NORTH);
-
-        // 시간표 테이블 초기화
-        initTable();
-
-        // Mock DAO로 그룹 목록 불러오기
-        loadGroupList();
-
+        
+        initTable();		// 시간표 테이블 초기화
+        
         // 그룹 선택 이벤트
-        groupComboBox.addActionListener(e -> {
-            if (groupComboBox.getSelectedItem() != null) {
-                String groupName = groupComboBox.getSelectedItem().toString();
-                loadSchedulesForGroup(groupName);
-            }
-        });
+        groupComboBox.addActionListener(this);
+    }
+    
+    public void refreshGroupList() {
+    	groups = SDAO.getInstance().getMyGroups(u.getID());	// 사용자 아이디를 인수로 DAO 객체에서 그룹 ArrayList 반환
+		
+		this.removeAll();					// 모든 컴포넌트를 제거
+		comboBoxModel.removeAllElements();	// 모든 원소를 제거
+		
+		if(groups.size() == 0) {	// 사용자가 가입되어있는 그룹이 없는 경우
+			JLabel impormationLabel = new JLabel("초대 코드를 입력하여 그룹에 가입해주세요.", JLabel.CENTER);
+			impormationLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
+			add(impormationLabel, BorderLayout.CENTER);
+			selectedGroup = null;
+			
+			this.revalidate();	// 배치 정보 재계산
+			this.repaint();		// 재배치
+			
+			return;
+		}
+		
+		add(topPanel, BorderLayout.NORTH);
+        add(tableScrollPane, BorderLayout.CENTER);	// 패널에 테이블 추가
+		
+        groupComboBox.removeActionListener(this);
+        
+        loadGroupList();	// Mock DAO로 그룹 목록 불러오기
+		
+		groupComboBox.setSelectedIndex(0);
+		selectedGroup = groups.get(0);
+		
+		groupComboBox.addActionListener(this);
+		loadSchedulesForGroup();
+		
+		this.revalidate();	// 배치 정보 재계산
+		this.repaint();		// 재배치
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+    	int selectedIndex = groupComboBox.getSelectedIndex();
+    	
+    	if(selectedIndex != -1) {
+	    	selectedGroup = groups.get(selectedIndex);
+	    	loadSchedulesForGroup();
+    	}
     }
 
     private void initTable() {
@@ -83,7 +135,7 @@ public class GroupPanel extends JPanel {
         }
 
         // 테이블 열 크기
-        table.setRowHeight(50);
+        table.setRowHeight(40);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -98,32 +150,25 @@ public class GroupPanel extends JPanel {
         table.getTableHeader().setReorderingAllowed(false);
         // 테이블 크기조정 불기
         table.getTableHeader().setResizingAllowed(false);
-        // 패널에 테이블 추가
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        
+        tableScrollPane = new JScrollPane(table);
     }
 
     /** Mock DAO로 그룹 목록 가져오기 */
     private void loadGroupList() {
-        ArrayList<Group> groups = SDAO.getInstance().getMyGroups(u.getID());
+        //groups = SDAO.getInstance().getMyGroups(u.getID());
         for (Group g : groups) {
-            groupComboBox.addItem(g.getGroupName());
+            //groupComboBox.addItem(g.getGroupName());
+        	comboBoxModel.addElement(g.getGroupName());
         }
     }
 
     /** 특정 그룹의 전체 일정 로드 */
-    private void loadSchedulesForGroup(String groupName) {
+    private void loadSchedulesForGroup() {
         clearTable();
-        // 그룹 명의 di 찾기
-        ArrayList<Group> groups = SDAO.getInstance().getMyGroups(u.getID());
-        String gid = null;
-        for (Group g : groups) {
-            if (g.getGroupName().equals(groupName)) {
-                gid = g.getGroupId();
-                break;
-            }
-        }
-        // 그룹원 일정 로드
-        ArrayList<Schedule> schedules = SDAO.getInstance().getGroupSchedules(gid);
+        
+        // 그룹 일정 로드
+        ArrayList<Schedule> schedules = SDAO.getInstance().getGroupSchedules(selectedGroup.getGroupId());
 
         // 테이블 배치
         for (Schedule s : schedules) {
@@ -141,7 +186,11 @@ public class GroupPanel extends JPanel {
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
         int endRow = end.getHour() - START_HOUR;
-
+        
+        if(end.getMinute() == 0 && endRow > startRow) {
+        	endRow--;
+        }
+        
         // 범위 벗어나면 무시
         if (col < 1 || col > 7)
             return;
