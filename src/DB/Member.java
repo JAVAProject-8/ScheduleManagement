@@ -22,4 +22,8 @@ public class Member {
     public String getTask() {
     	return this.task;
     }
+    
+    public String getPosition() {
+    	return this.is_admin;
+    }
 }
