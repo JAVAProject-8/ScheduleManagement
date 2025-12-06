@@ -1,7 +1,7 @@
 package GUI.Frame;
 
-import GUI.Dialog.*;
 import GUI.Panel.*;
+import GUI.Dialog.*;
 
 import DB.User;
 import DB.Group;
@@ -18,7 +18,7 @@ import javax.swing.border.EmptyBorder;
 public class MainFrame extends JFrame implements ActionListener {
 	public User user = null;
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
-	JPanel groupMainPanel = null;
+	GroupMainPanel groupMainPanel = null;
 	
 	public MainFrame(User _u) {
 		Container ct = getContentPane();
@@ -87,7 +87,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		setTitle("일정 관리 프로그램");
 		//pack();
-		setSize(1000, 500);
+		setSize(800, 600);
 		setResizable(false);	// 크기 조정
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
@@ -100,8 +100,6 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		if(command.equals("일정 추가")) {
 			new ScheduleDialog(this, "일정 추가", user);
-			// 일정 추가는 메뉴 외에 JTable 에서 MouseEvent로도 호출될 수 있음. 이 경우 생성자에 시각 시간을 전달
-			// 또는 캘린더에서 호출될 수 있음. 이 경우 생성자에 날짜를 전달
 		}
 		else if(command.equals("전체 일정 조회")) {
 			new CheckScheduleDialog(this, "전체 일정 조회", user);
@@ -116,7 +114,7 @@ public class MainFrame extends JFrame implements ActionListener {
 				return;
 			}
 			
-			// 그룹 아이디와 그룹 명, 초대 코드를 DB에 전달(수정 필요)
+			// 그룹 아이디와 그룹 명, 사용자 ID를 DB에 전달(수정 필요)
 			boolean result = SDAO.getInstance().createGroup(groupId, groupName, user.getID());	//
 			
 			// 그룹 생성 성공
@@ -154,16 +152,17 @@ public class MainFrame extends JFrame implements ActionListener {
 			Object[] options = groups.toArray();	// ArrayList를 Object 배열로 변환
 			Group selectedGroup = (Group)JOptionPane.showInputDialog(null, "탈퇴할 그룹을 선택해주세요", "그룹 탈퇴", JOptionPane.QUESTION_MESSAGE, null, options, null);
 			
-			//boolean result = SDAO.getInstance().exitGroup(user.getID(), selectedGroup.getGroupId());	// 사용자 아이디와 그룹 아이디를 인수로 DAO 객체에서 그룹 탈퇴 성공 여부 반환
+			boolean result = SDAO.getInstance().leaveGroup(user.getID(), selectedGroup.getGroupId());	// 사용자 아이디와 그룹 아이디를 인수로 DAO 객체에서 그룹 탈퇴 성공 여부 반환
 			
-//			// 그룹 탈퇴 성공 시
-//			if(result) {
-//				
-//			}
-//			// 그룹 탈퇴 실패 시
-//			else {
-//				
-//			}
+			// 그룹 탈퇴 성공 시
+			if(result) {
+				JOptionPane.showMessageDialog(null, "그룹 탈퇴 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+				//groupMainPanel.setGroup();	// 현재 그룹 목록 갱신
+			}
+			// 그룹 탈퇴 실패 시
+			else {
+				JOptionPane.showMessageDialog(null, "그룹 탈퇴 실패(예상치 못한 오류)", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		else if(command.equals("사용자 정보 관리")) {
 			new EditUserInfoDialog(this, "사용자 정보 관리", user);	// 현재 User 객체를 전달
