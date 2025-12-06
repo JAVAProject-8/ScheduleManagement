@@ -96,7 +96,7 @@ public class GroupMemberInfoDialog extends JDialog {
 	}
 	
 	public void setUserInfo() {
-		nameField.setText(user.getID());
+		nameField.setText(user.getName());
 		String position = member.getPosition();
 		if(position.equals("Y")) {
 			position = "팀장";
