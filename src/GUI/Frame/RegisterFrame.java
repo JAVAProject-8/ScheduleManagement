@@ -1,4 +1,4 @@
-package GUI;
+package GUI.Frame;
 
 import DB.SDAO;
 import DB.User;

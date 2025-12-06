@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.Frame.*;
 import javax.swing.*;
 
 public class ScheduleInformation {

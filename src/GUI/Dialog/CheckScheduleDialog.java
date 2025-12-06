@@ -1,4 +1,4 @@
-package GUI;
+package GUI.Dialog;
 
 import DB.User;
 import DB.Schedule;
@@ -237,6 +237,10 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 						JOptionPane.showMessageDialog(null, "일정 삭제 실패. 다시 시도해 주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 					}
 				}
+			}
+			// 선택된 행이 없다면
+			else {
+				JOptionPane.showMessageDialog(null, "행을 선택해주세요.", "Information", JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 	}

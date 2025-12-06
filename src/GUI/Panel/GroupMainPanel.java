@@ -1,4 +1,6 @@
-package GUI;
+package GUI.Panel;
+
+import GUI.Dialog.*;
 
 import DB.User;
 import DB.Group;
@@ -140,7 +142,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 			public void mouseClicked(MouseEvent e) {
 				// 특정 행 더블 클릭 시 그룹원 상세 정보 출력
 				Window mainFrame = SwingUtilities.getWindowAncestor(groupMemberTable);
-				//new GroupMemberInfoDialog((JFrame)mainFrame, "상세 정보");
+				//new GroupMemberInfoDialog((JFrame)mainFrame, "상세 정보", "선택한 그룹원 User 객체", "선택한 그룹원 Member 객체");
 			}
 			
 			@Override
@@ -192,7 +194,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 			}
 			
 			// 메모 객체 생성
-			//Memo memo = new Memo("메모아이디", "그룹 아이디", user.getID(), memoText, "현재 시간");
+			//Memo memo = new Memo("그룹 아이디", user.getID, memoText, LocalDateTime.now());
 			
 			// 사용자의 입력을 가져와 DB에 전달
 			//boolean result = SDAO.getInstance().insertMemo(memo);
@@ -208,7 +210,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		else if(obj == updateTaskButton) {
 			// JOptionPanel로 간단한 입력을 받아 저장
 			String task = JOptionPane.showInputDialog(null, "현재 업무를 입력해주세요.", "업무 입력", JOptionPane.QUESTION_MESSAGE).trim();
-			if(task.equals("") || task == null) {
+			if(task == null || task.equals("")) {
 				JOptionPane.showMessageDialog(null, "입력 내용을 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}

@@ -1,7 +1,8 @@
-package GUI;
+package GUI.Dialog;
 
 import DB.SDAO;
 import DB.User;
+import GUI.Frame.MainFrame;
 
 import javax.swing.*;
 import javax.swing.event.*;

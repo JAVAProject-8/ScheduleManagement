@@ -1,4 +1,7 @@
-package GUI;
+package GUI.Frame;
+
+import GUI.Dialog.*;
+import GUI.Panel.*;
 
 import DB.User;
 import DB.Group;
@@ -13,7 +16,7 @@ import java.util.Vector;
 import javax.swing.border.EmptyBorder;
 
 public class MainFrame extends JFrame implements ActionListener {
-	User user = null;
+	public User user = null;
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
 	JPanel groupMainPanel = null;
 	
@@ -96,7 +99,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		String command = e.getActionCommand();
 		
 		if(command.equals("일정 추가")) {
-			new AddScheduleDialog(this, "일정 추가", user);
+			new ScheduleDialog(this, "일정 추가", user);
 			// 일정 추가는 메뉴 외에 JTable 에서 MouseEvent로도 호출될 수 있음. 이 경우 생성자에 시각 시간을 전달
 			// 또는 캘린더에서 호출될 수 있음. 이 경우 생성자에 날짜를 전달
 		}
@@ -105,11 +108,11 @@ public class MainFrame extends JFrame implements ActionListener {
 		}
 		else if(command.equals("그룹 생성")) {
 			String groupId = JOptionPane.showInputDialog(null, "그룹 아이디를 입력해주세요.", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
-			if(groupId.equals("") || groupId == null) {
+			if(groupId == null || groupId.equals("")) {
 				return;
 			}
 			String groupName = JOptionPane.showInputDialog(null, "그룹명을 입력해주세요.", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
-			if(groupName.equals("") || groupName == null) {
+			if(groupName == null || groupName.equals("")) {
 				return;
 			}
 			
@@ -127,7 +130,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		}
 		else if(command.equals("그룹 가입")) {
 			String inviteCode = JOptionPane.showInputDialog(null, "초대코드를 입력해주세요.", "그룹 가입", JOptionPane.QUESTION_MESSAGE);
-			if(inviteCode.equals("") || inviteCode == null) {
+			if(inviteCode == null || inviteCode.equals("")) {
 				return;
 			}
 			

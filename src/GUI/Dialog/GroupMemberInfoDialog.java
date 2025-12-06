@@ -1,6 +1,7 @@
-package GUI;
+package GUI.Dialog;
 
 import DB.User;
+import DB.Member;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +17,13 @@ public class GroupMemberInfoDialog extends JDialog {
 	JButton checkButton;	// 확인(종료) 버튼
 	
 	User user = null;
+	Member member = null;
 	
-	public GroupMemberInfoDialog(JFrame frame, String title, User _u) {
+	public GroupMemberInfoDialog(JFrame frame, String title, User _u, Member _m) {
 		super(frame, title, true);
+		user = _u;
+		member = _m;
+		
 		setLayout(new BorderLayout());
 		
 		JPanel labelsPanel = new JPanel();
@@ -92,7 +97,14 @@ public class GroupMemberInfoDialog extends JDialog {
 	
 	public void setUserInfo() {
 		nameField.setText(user.getID());
-		positionField.setText("관리자");	// 이 부분은 Member 테이블에서 가져와야 함
+		String position = member.getPosition();
+		if(position.equals("Y")) {
+			position = "팀장";
+		}
+		else if(position.equals("N")) {
+			position = "팀원";
+		}
+		positionField.setText(position);	// 이 부분은 Member 테이블에서 가져와야 함
 		organizationField.setText(user.getOrganization());
 		birthDateField.setText(user.getBirthDate().format(DateTimeFormatter.ofPattern("YYYY년 MM월 dd일")));
 		phoneNumberField.setText(user.getPhoneNumber().substring(0, 3) + "-" + user.getPhoneNumber().substring(3, 7) + "-" + user.getPhoneNumber().substring(7));
