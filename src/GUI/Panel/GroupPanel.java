@@ -1,4 +1,4 @@
-package GUI.Panel.test;
+package GUI.Panel;
 
 import javax.swing.*;
 import javax.swing.table.*;

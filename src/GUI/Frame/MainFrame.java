@@ -14,8 +14,13 @@ import java.util.ArrayList;
 
 public class MainFrame extends JFrame implements ActionListener {
 	public User user = null;
+	
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
+	MainPanel mainPanel = null;
+	TimetablePanel timeTablePanel = null;
+	CalendarPanel calendarPanel = null;
 	GroupMainPanel groupMainPanel = null;
+	GroupPanel groupPanel = null;
 	
 	public MainFrame(User _u) {
 		Container ct = getContentPane();
@@ -62,14 +67,17 @@ public class MainFrame extends JFrame implements ActionListener {
 		tabbedPane.setBackground(Color.WHITE);
 		
 		// 패널 생성
+		mainPanel = new MainPanel(user);
+		timeTablePanel = new TimetablePanel(user);
+		calendarPanel = new CalendarPanel(user);
 		groupMainPanel = new GroupMainPanel(user);
+		groupPanel = new GroupPanel(user);
 		
-		
-		tabbedPane.addTab("메인", new JPanel());
-		tabbedPane.addTab("시간표", new JPanel());
-		tabbedPane.addTab("캘린더", new JPanel());
+		tabbedPane.addTab("메인", mainPanel);
+		tabbedPane.addTab("시간표", timeTablePanel);
+		tabbedPane.addTab("캘린더", calendarPanel);
 		tabbedPane.addTab("그룹 메인", groupMainPanel);
-		tabbedPane.addTab("그룹 시간표", new JPanel());
+		tabbedPane.addTab("그룹 시간표", groupPanel);
 		
 		// ActionListener 등록
 		addScheduleMenuItem.addActionListener(this);

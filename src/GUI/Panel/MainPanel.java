@@ -65,9 +65,14 @@ public class MainPanel extends JPanel {
         setLayout(new BorderLayout());
 
         // 상단 라벨
+        JLabel label1 = new JLabel("오늘의 일정", JLabel.CENTER);
+        label1.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        JLabel label2 = new JLabel("마감 임박", JLabel.CENTER);
+        label2.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        
         JPanel top = new JPanel(new GridLayout(1, 2));
-        top.add(new JLabel("오늘의 일정"));
-        top.add(new JLabel("마감 임박"));
+        top.add(label1);
+        top.add(label2);
         add(top, BorderLayout.NORTH);
 
         initTable();

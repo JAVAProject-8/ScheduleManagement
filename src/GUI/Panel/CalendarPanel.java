@@ -1,4 +1,4 @@
-package GUI.Panel.test;
+package GUI.Panel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -33,6 +33,7 @@ public class CalendarPanel extends JPanel {
             currentMonth.getYear() + "년 " + currentMonth.getMonthValue() + "월",
             SwingConstants.CENTER
         );
+        monthLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
         add(monthLabel, BorderLayout.NORTH);
 
         // 날짜 버튼 영역
