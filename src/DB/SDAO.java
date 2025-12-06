@@ -1,6 +1,7 @@
 package DB;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class SDAO {
@@ -14,7 +15,11 @@ public class SDAO {
         return instance;
     }
 
-    // 로그인: DB 조회하여 ID, PW가 일치하는 경우 사용자 정보를 User 객체에 담아 반환
+    // ----------------------------------------------------------------
+    // 회원 관리: 로그인, 회원가입, 회원탈퇴, 아이디 중복 검사
+    // ----------------------------------------------------------------
+
+    // 기능: 로그인
     // 매개변수: (유저ID, 비밀번호)
     // 반환값: User 객체 (실패 시 null)
     public User loginGetUser(String userId, String userPw) {
@@ -57,7 +62,7 @@ public class SDAO {
         return user; // 실패하면 null 반환
     }
 
-    // 회원가입: 사용자 정보를 DB에 삽입하고 성공 여부를 반환
+    // 기능: 회원가입
     // 매개변수: (User 객체)
     // 반환값: true(성공), false(실패)
     public boolean registerUser(User user) {
@@ -92,7 +97,37 @@ public class SDAO {
         }
     }
 
-    // 기능: user_id를 받아서 User 객체 반환
+    // 기능: 아이디 중복 검사
+    // 매개변수: (유저ID)
+    // 반환값: true(중복), false(중복 없음)
+    public boolean checkIdDuplicate(String userId) {
+        boolean isDuplicate = false;
+        String sql = "SELECT 1 FROM users WHERE user_id = ?"; // 1만 가져와서 존재 여부만 확인
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    isDuplicate = true; // 결과가 조회되면 이미 있는 아이디
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("아이디 중복 확인 중 오류");
+        }
+
+        return isDuplicate;
+    }
+
+    // ----------------------------------------------------------------
+    // 유저 관리: 조회, 수정, 삽입
+    // ----------------------------------------------------------------
+
+    // 기능: 유저 조회
     // 매개변수: 조회할 user_id
     // 반환값: User 객체 (없으면 null)
     public User getUserInfo(String userId) {
@@ -130,7 +165,7 @@ public class SDAO {
         return user;
     }
 
-    // 기능: 사용자 정보 수정
+    // 기능: 유저 정보 수정
     // 매개변수: 수정할 정보가 담긴 User 객체 (ID는 WHERE 조건으로 사용)
     // 반환값: true(성공), false(실패)
     public boolean updateUserInfo(User user) {
@@ -182,215 +217,38 @@ public class SDAO {
         }
     }
 
-    // 아이디 중복 검사: DB에 ID를 조회하여 중복 여부를 검사
-    // 매개변수: (유저ID)
-    // 반환값: true(중복), false(중복 없음)
-    public boolean checkIdDuplicate(String userId) {
-        boolean isDuplicate = false;
-        String sql = "SELECT 1 FROM users WHERE user_id = ?"; // 1만 가져와서 존재 여부만 확인
+    // ----------------------------------------------------------------
+    // 그룹 관리: 조회, 삽입, 초대코드 생성
+    // ----------------------------------------------------------------
+
+    // 기능: 그룹 조회
+    // 매개변수: 그룹ID
+    // 반환값: Group 객체
+    public Group getGroupInfo(String groupId) {
+        Group group = null;
+        String sql = "SELECT group_id, group_name, invite_code "
+                + "FROM user_groups "
+                + "WHERE group_id = ?";
 
         try (Connection conn = DBC.connect();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, userId);
+            pstmt.setString(1, groupId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    isDuplicate = true; // 결과가 조회되면 이미 있는 아이디
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("아이디 중복 확인 중 오류");
-        }
-
-        return isDuplicate;
-    }
-
-    // 기능: 해당 유저의 모든 일정을 조회하여 리스트로 반환한다.
-    // 매개변수: 유저ID
-    // 반환값: Schedule 리스트
-    public ArrayList<Schedule> getSchedules(String userId) {
-        ArrayList<Schedule> list = new ArrayList<>();
-
-        // 오늘 날짜에 포함되는 일정 조회
-        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, "
-                + "start_at, end_at "
-                + "FROM schedules "
-                + "WHERE writer_id = ? "
-                + "ORDER BY start_at ASC";
-        // DB 연결
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, userId);
-
-            // 받아온 일정을 객체로 만들어 저장
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("schedule_id");
-                    String wId = rs.getString("writer_id");
-                    String gid = rs.getString("group_id");
-                    String description = rs.getString("schedule_description");
-                    String type = rs.getString("schedule_type");
-                    java.sql.Timestamp startTs = rs.getTimestamp("start_at");
-                    java.sql.Timestamp endTs = rs.getTimestamp("end_at");
-
-                    // Timestamp를 LocalDateTime으로 변환
-                    java.time.LocalDateTime start = (startTs != null) ? startTs.toLocalDateTime() : null;
-                    java.time.LocalDateTime end = (endTs != null) ? endTs.toLocalDateTime() : null;
-
-                    list.add(new Schedule(id, wId, gid, description, type, start, end));
+                    String name = rs.getString("group_name");
+                    String code = rs.getString("invite_code");
+                    group = new Group(groupId, name, code);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return group;
     }
 
-    // 일정 추가: 전달 받은 일정 정보를 DB에 삽입한다
-    // 매개변수: Schedule 객체
-    // 반환값: true(성공), false(실패)
-    public boolean insertSchedule(Schedule dto) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        // 개인 일정과 그룹 일정 모두 명시함
-        String sql = "INSERT INTO schedules (writer_id, group_id, schedule_description, schedule_type, start_at, end_at) VALUES (?, ?, ?, ?, ?, ?)";
-
-        boolean result = false;
-
-        try {
-            conn = DBC.connect();
-            pstmt = conn.prepareStatement(sql);
-
-            // 작성자 ID
-            pstmt.setString(1, dto.getWriterId());
-
-            // 그룹 ID 처리
-            // Schedule 객체의 groupId가 null이면 -> 개인 일정(DB에 NULL 저장)
-            // 0이 아니면 -> 그룹 일정(DB에 숫자 저장)
-            if (dto.getGroupId() == null) {
-                // 개인 일정일 때: DB에 'NULL'을 집어넣으라는 명령어
-                pstmt.setNull(2, java.sql.Types.INTEGER);
-            } else {
-                // 그룹 일정일 때: 실제 그룹 번호(1, 2, 3...)를 집어넣음
-                pstmt.setString(2, dto.getGroupId());
-            }
-
-            // 일정 제목
-            pstmt.setString(3, dto.getScheduleDescription());
-
-            // 일정 종류
-            pstmt.setString(4, dto.getScheduleType());
-
-            // 시작 시간, Timestamp로 변환
-            if (dto.getStartAt() != null)
-                pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getStartAt()));
-            else
-                pstmt.setTimestamp(5, null);
-
-            // 종료 시간, Timestamp로 변환
-            if (dto.getEndAt() != null)
-                pstmt.setTimestamp(6, java.sql.Timestamp.valueOf(dto.getEndAt()));
-            else
-                pstmt.setTimestamp(6, null);
-
-            // 적용
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
-                result = true;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // 자원 해제
-            try {
-                if (pstmt != null)
-                    pstmt.close();
-                DBC.close(); // 연결 끊기
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return result;
-    }
-
-    // 기능: 기존 일정 정보를 수정한다
-    // 매개변수: 수정된 내용이 담긴 Schedule 객체
-    // 반환값: true(성공), false(실패)
-    public boolean updateSchedule(Schedule dto) {
-        boolean result = false;
-
-        String sql = "UPDATE schedules SET "
-                + "group_id = ?, "
-                + "schedule_description = ?, "
-                + "schedule_type = ?, "
-                + "start_at = ?, "
-                + "end_at = ? "
-                + "WHERE schedule_id = ?";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            if (dto.getGroupId() == null) {
-                pstmt.setNull(1, java.sql.Types.INTEGER);
-            } else {
-                pstmt.setString(1, dto.getGroupId());
-            }
-
-            pstmt.setString(2, dto.getScheduleDescription());
-            pstmt.setString(2, dto.getScheduleDescription());
-            pstmt.setString(3, dto.getScheduleType());
-            pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
-            pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
-
-            pstmt.setInt(6, dto.getScheduleId());
-
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
-                result = true;
-                System.out.println("일정 수정 성공 (ID: " + dto.getScheduleId() + ")");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("일정 수정 실패");
-        }
-
-        return result;
-    }
-
-    // 기능: 특정 일정을 삭제한다
-    // 매개변수: 삭제할 일정의 ID (schedule_id)
-    // 반환값: boolean (성공 true, 실패 false)
-    public boolean deleteSchedule(int scheduleId) {
-        boolean result = false;
-
-        String sql = "DELETE FROM schedules WHERE schedule_id = ?";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, scheduleId);
-
-            int count = pstmt.executeUpdate();
-            if (count > 0) {
-                result = true;
-                System.out.println("일정 삭제 성공 (ID: " + scheduleId + ")");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("일정 삭제 실패");
-        }
-
-        return result;
-    }
-
-    // 기능: 전달받은 유저ID를 DB에 조회하여 소속 그룹을 리스트로 반환한다
+    // 기능: 소속 그룹 조회
     // 매개변수: (유저ID)
     // 반환값: Group 리스트
     public ArrayList<Group> getMyGroups(String userId) {
@@ -423,144 +281,7 @@ public class SDAO {
         return list;
     }
 
-    // 기능: 그룹ID를 DB에 조회하여 해당 그룹 정보를 Group 객체로 반환한다.
-    // 매개변수: 그룹ID
-    // 반환값: Group 객체
-    public Group getGroupInfo(String groupId) {
-        Group group = null;
-        String sql = "SELECT group_id, group_name, invite_code "
-                + "FROM user_groups "
-                + "WHERE group_id = ?";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, groupId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String name = rs.getString("group_name");
-                    String code = rs.getString("invite_code");
-                    group = new Group(groupId, name, code);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return group;
-    }
-
-    // 기능: 해당 그룹의 모든 그룹원을 리스트로 반환한다
-    // 매개변수: 그룹ID
-    // 반환값: Member 리스트
-    public ArrayList<Member> getMembersByGroupId(String groupId) {
-        ArrayList<Member> list = new ArrayList<>();
-
-        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, "
-                + "u.name " // User 테이블에서 이름 가져오기
-                + "FROM group_members m "
-                + "JOIN users u ON m.user_id = u.user_id "
-                + "WHERE m.group_id = ? "
-                + "ORDER BY m.is_admin DESC, u.name ASC";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, groupId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    // DB에서 값 꺼내기
-                    String user_id = rs.getString("user_id");
-                    String group_id = rs.getString("group_id");
-                    String is_admin = rs.getString("is_admin");
-                    String task = rs.getString("task");
-                    String user_name = rs.getString("name"); // 이름
-
-                    // null 처리 (업무가 아직 없을 경우)
-                    if (task == null)
-                        task = "할당 안됨";
-
-                    // 리스트에 추가
-                    list.add(new Member(user_id, group_id, is_admin, task, user_name));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("멤버 조회 오류: " + e.getMessage());
-        }
-
-        return list;
-    }
-
-    // 기능: 메모 객체를 받아서 DB에 새 메모 삽입 (작성일시는 DB 자동 생성)
-    // 매개변수: Memo 객체 (group_id, writer_id, content 필요)
-    // 반환값: true(성공), false(실패)
-    public boolean insertMemo(Memo memo) {
-        String sql = "INSERT INTO memoes (group_id, writer_id, content) VALUES (?, ?, ?)";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, memo.getGroupId());
-            pstmt.setString(2, memo.getWriterId());
-            pstmt.setString(3, memo.getContent());
-
-            int result = pstmt.executeUpdate();
-
-            // 1행 이상 삽입되면 성공
-            return result > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("메모 삽입 중 DB 오류 발생: " + e.getMessage());
-            return false;
-        }
-    }
-
-    // 기능: 해당 그룹의 모든 메모를 list로 반환한다
-    // 매개변수: 그룹ID
-    // 반환값: Memo 리스트
-    public ArrayList<Memo> getMemosByGroupId(String groupId) {
-        ArrayList<Memo> list = new ArrayList<>();
-
-        // 해당 그룹의 메모 불러오기
-        String sql = "SELECT memo_id, group_id, writer_id, content, "
-                + "DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_str "
-                + "FROM memoes "
-                + "WHERE group_id = ? "
-                + "ORDER BY created_at DESC";
-
-        // DB 연결
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            // SQL의 ? 부분 채우기
-            pstmt.setString(1, groupId);
-
-            // 실행 및 결과 받기
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    // DB에서 값 꺼내기
-                    int mId = rs.getInt("memo_id");
-                    String gId = rs.getString("group_id");
-                    String wId = rs.getString("writer_id");
-                    String content = rs.getString("content");
-                    String date = rs.getString("date_str"); // 포맷팅된 날짜 문자열
-
-                    // 리스트에 추가
-                    list.add(new Memo(mId, gId, wId, content, date));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("메모 조회 중 오류 발생");
-        }
-
-        return list;
-    }
-
-    // 기능: 그룹 생성하고 생성자를 관리자로 등록함 초대코드도 자동으로 생성
+    // 기능: 그룹 생성
     // 매개변수: 그룹 이름, 생성자 ID
     // 반환값: boolean(성공 true, 실패 false))
     public boolean createGroup(String groupId, String groupName, String writerId) {
@@ -631,10 +352,93 @@ public class SDAO {
         return isSuccess;
     }
 
-    // 기능: 초대 코드를 이용해 그룹 가입
+    // 기능: 6자리 랜덤 초대 코드 생섬
+    // 매개변수: DB연결객체
+    // 반환값: String(생성된 초대코드)
+    private String generateInviteCode(Connection conn) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        java.util.Random random = new java.util.Random();
+        String code;
+
+        // 중복 체크
+        while (true) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            code = sb.toString();
+
+            String sql = "SELECT 1 FROM user_groups WHERE invite_code = ?";
+            boolean isDuplicate = false;
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, code);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        isDuplicate = true; // 중복됨
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (!isDuplicate) {
+                break;
+            }
+        }
+        return code;
+    }
+
+    // ----------------------------------------------------------------
+    // 그룹원 관리: 조회, 삽입, 갱신, 삭제
+    // ----------------------------------------------------------------
+
+    // 기능: 그룹원 조회
+    // 매개변수: 그룹ID
+    // 반환값: Member 리스트
+    public ArrayList<Member> getMembersByGroupId(String groupId) {
+        ArrayList<Member> list = new ArrayList<>();
+
+        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, "
+                + "u.name " // User 테이블에서 이름 가져오기
+                + "FROM group_members m "
+                + "JOIN users u ON m.user_id = u.user_id "
+                + "WHERE m.group_id = ? "
+                + "ORDER BY m.is_admin DESC, u.name ASC";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, groupId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // DB에서 값 꺼내기
+                    String user_id = rs.getString("user_id");
+                    String group_id = rs.getString("group_id");
+                    String is_admin = rs.getString("is_admin");
+                    String task = rs.getString("task");
+                    String user_name = rs.getString("name"); // 이름
+
+                    // null 처리 (업무가 아직 없을 경우)
+                    if (task == null)
+                        task = "할당 안됨";
+
+                    // 리스트에 추가
+                    list.add(new Member(user_id, group_id, is_admin, task, user_name));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("멤버 조회 오류: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    // 기능: 그룹 가입
     // 매개변수: 가입할 아이디, 초대코드
-    // 반환값: int
-    // 1 = 성공 || 0 = 초대코드 오류 || -1 = 이미 가입됨/DB오류
+    // 반환값: 1 = 성공 || 0 = 초대코드 오류 || -1 = 이미 가입됨/DB오류
     public int joinGroup(String userId, String inviteCode) {
         Connection conn = null;
         PreparedStatement pstmtFind = null;
@@ -704,6 +508,30 @@ public class SDAO {
         return resultStatus;
     }
 
+    // 기능: 그룹 탈퇴
+    // 매개변수: 탈퇴할 유저ID, 탈퇴할 그룹ID
+    // 반환값: true(성공), false(실패)
+    public boolean leaveGroup(String userId, int groupId) {
+        String sql = "DELETE FROM group_members WHERE user_id = ? AND group_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+            pstmt.setInt(2, groupId);
+
+            int result = pstmt.executeUpdate();
+
+            // 1행 이상 삭제되었다면 탈퇴 성공
+            return result > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("그룹 탈퇴 중 DB 오류 발생: " + e.getMessage());
+            return false;
+        }
+    }
+
     // 기능: 업무 갱신
     // 매개변수: 대상 멤버ID, 그룹 ID, 변경할 업무 내용
     // 반환값: boolean(성공 시 true, 실패 시 false)
@@ -727,40 +555,304 @@ public class SDAO {
         }
     }
 
-    // 기능: 중복되지 않는 6자리 랜덤 초대 코드를 생섬
-    // 매개변수: DB연결객체
-    // 반환값: String(생성된 초대코드)
-    private String generateInviteCode(Connection conn) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        java.util.Random random = new java.util.Random();
-        String code;
+    // ----------------------------------------------------------------
+    // 일정 관리: 조회, 삽입, 갱신, 삭제
+    // ----------------------------------------------------------------
 
-        // 중복 체크
-        while (true) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 6; i++) {
-                sb.append(chars.charAt(random.nextInt(chars.length())));
-            }
-            code = sb.toString();
+    // 기능: 유저 일정 조회
+    // 매개변수: 유저ID
+    // 반환값: Schedule 리스트
+    public ArrayList<Schedule> getSchedules(String userId) {
+        ArrayList<Schedule> list = new ArrayList<>();
 
-            String sql = "SELECT 1 FROM user_groups WHERE invite_code = ?";
-            boolean isDuplicate = false;
+        // 오늘 날짜에 포함되는 일정 조회
+        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, "
+                + "start_at, end_at "
+                + "FROM schedules "
+                + "WHERE writer_id = ? "
+                + "ORDER BY start_at ASC";
+        // DB 연결
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                pstmt.setString(1, code);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        isDuplicate = true; // 중복됨
-                    }
+            pstmt.setString(1, userId);
+
+            // 받아온 일정을 객체로 만들어 저장
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("schedule_id");
+                    String wId = rs.getString("writer_id");
+                    String gid = rs.getString("group_id");
+                    String description = rs.getString("schedule_description");
+                    String type = rs.getString("schedule_type");
+                    java.sql.Timestamp startTs = rs.getTimestamp("start_at");
+                    java.sql.Timestamp endTs = rs.getTimestamp("end_at");
+
+                    // Timestamp를 LocalDateTime으로 변환
+                    java.time.LocalDateTime start = (startTs != null) ? startTs.toLocalDateTime() : null;
+                    java.time.LocalDateTime end = (endTs != null) ? endTs.toLocalDateTime() : null;
+
+                    list.add(new Schedule(id, wId, gid, description, type, start, end));
                 }
-            } catch (SQLException e) {
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 기능: 그룹 일정 조회
+    // 매개변수: 유저ID
+    // 반환값: Schedule 리스트
+    public ArrayList<Schedule> getGroupSchedules(String groupId) {
+        ArrayList<Schedule> list = new ArrayList<>();
+
+        // 오늘 날짜에 포함되는 일정 조회
+        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, start_at, end_at "
+                + "FROM schedules "
+                + "WHERE group_id = ? "
+                + "ORDER BY start_at ASC";
+        // DB 연결
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, groupId);
+
+            // 받아온 일정을 객체로 만들어 저장
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("schedule_id");
+                    String wId = rs.getString("writer_id");
+                    String gid = rs.getString("group_id");
+                    String description = rs.getString("schedule_description");
+                    String type = rs.getString("schedule_type");
+                    java.sql.Timestamp startTs = rs.getTimestamp("start_at");
+                    java.sql.Timestamp endTs = rs.getTimestamp("end_at");
+
+                    // Timestamp를 LocalDateTime으로 변환
+                    java.time.LocalDateTime start = (startTs != null) ? startTs.toLocalDateTime() : null;
+                    java.time.LocalDateTime end = (endTs != null) ? endTs.toLocalDateTime() : null;
+
+                    list.add(new Schedule(id, wId, gid, description, type, start, end));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 기능: 일정 추가
+    // 매개변수: Schedule 객체
+    // 반환값: true(성공), false(실패)
+    public boolean insertSchedule(Schedule dto) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        // 개인 일정과 그룹 일정 모두 명시함
+        String sql = "INSERT INTO schedules (writer_id, group_id, schedule_description, schedule_type, start_at, end_at) VALUES (?, ?, ?, ?, ?, ?)";
+
+        boolean result = false;
+
+        try {
+            conn = DBC.connect();
+            pstmt = conn.prepareStatement(sql);
+
+            // 작성자 ID
+            pstmt.setString(1, dto.getWriterId());
+
+            // 그룹 ID 처리
+            // Schedule 객체의 groupId가 null이면 -> 개인 일정(DB에 NULL 저장)
+            // 0이 아니면 -> 그룹 일정(DB에 숫자 저장)
+            if (dto.getGroupId() == null) {
+                // 개인 일정일 때: DB에 'NULL'을 집어넣으라는 명령어
+                pstmt.setNull(2, java.sql.Types.INTEGER);
+            } else {
+                // 그룹 일정일 때: 실제 그룹 번호(1, 2, 3...)를 집어넣음
+                pstmt.setString(2, dto.getGroupId());
+            }
+
+            // 일정 제목
+            pstmt.setString(3, dto.getScheduleDescription());
+
+            // 일정 종류
+            pstmt.setString(4, dto.getScheduleType());
+
+            // 시작 시간, Timestamp로 변환
+            if (dto.getStartAt() != null)
+                pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getStartAt()));
+            else
+                pstmt.setTimestamp(5, null);
+
+            // 종료 시간, Timestamp로 변환
+            if (dto.getEndAt() != null)
+                pstmt.setTimestamp(6, java.sql.Timestamp.valueOf(dto.getEndAt()));
+            else
+                pstmt.setTimestamp(6, null);
+
+            // 적용
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                result = true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 자원 해제
+            try {
+                if (pstmt != null)
+                    pstmt.close();
+                DBC.close(); // 연결 끊기
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            if (!isDuplicate) {
-                break;
-            }
         }
-        return code;
+        return result;
     }
+
+    // 기능: 일정 정보 수정
+    // 매개변수: 수정된 내용이 담긴 Schedule 객체
+    // 반환값: true(성공), false(실패)
+    public boolean updateSchedule(Schedule dto) {
+        boolean result = false;
+
+        String sql = "UPDATE schedules SET "
+                + "group_id = ?, "
+                + "schedule_description = ?, "
+                + "schedule_type = ?, "
+                + "start_at = ?, "
+                + "end_at = ? "
+                + "WHERE schedule_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (dto.getGroupId() == null) {
+                pstmt.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                pstmt.setString(1, dto.getGroupId());
+            }
+
+            pstmt.setString(2, dto.getScheduleDescription());
+            pstmt.setString(2, dto.getScheduleDescription());
+            pstmt.setString(3, dto.getScheduleType());
+            pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
+            pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
+
+            pstmt.setInt(6, dto.getScheduleId());
+
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                result = true;
+                System.out.println("일정 수정 성공 (ID: " + dto.getScheduleId() + ")");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("일정 수정 실패");
+        }
+
+        return result;
+    }
+
+    // 기능: 일정 삭제
+    // 매개변수: 삭제할 일정의 ID (schedule_id)
+    // 반환값: boolean (성공 true, 실패 false)
+    public boolean deleteSchedule(int scheduleId) {
+        boolean result = false;
+
+        String sql = "DELETE FROM schedules WHERE schedule_id = ?";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, scheduleId);
+
+            int count = pstmt.executeUpdate();
+            if (count > 0) {
+                result = true;
+                System.out.println("일정 삭제 성공 (ID: " + scheduleId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("일정 삭제 실패");
+        }
+
+        return result;
+    }
+
+    // ----------------------------------------------------------------
+    // 메모 관리: 조회, 삽입, 갱신, 삭제
+    // ----------------------------------------------------------------
+
+    // 기능: 그룹 메모 조회
+    // 매개변수: 그룹ID
+    // 반환값: Memo 리스트
+    public ArrayList<Memo> getMemosByGroupId(String groupId) {
+        ArrayList<Memo> list = new ArrayList<>();
+
+        // 해당 그룹의 메모 불러오기
+        String sql = "SELECT memo_id, group_id, writer_id, content, created_at"
+                + "FROM memos "
+                + "WHERE group_id = ? "
+                + "ORDER BY created_at DESC";
+
+        // DB 연결
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // SQL의 ? 부분 채우기
+            pstmt.setString(1, groupId);
+
+            // 실행 및 결과 받기
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // DB에서 값 꺼내기
+                    int mId = rs.getInt("memo_id");
+                    String gId = rs.getString("group_id");
+                    String wId = rs.getString("writer_id");
+                    String content = rs.getString("content");
+
+                    Timestamp date_ts = rs.getTimestamp("created_at"); // 포맷팅된 날짜 문자열
+                    LocalDateTime date_ldt = date_ts.toLocalDateTime();
+
+                    // 리스트에 추가
+                    list.add(new Memo(mId, gId, wId, content, date_ldt));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("메모 조회 중 오류 발생");
+        }
+
+        return list;
+    }
+
+    // 기능: 메모 추가
+    // 매개변수: Memo 객체 (group_id, writer_id, content 필요)
+    // 반환값: true(성공), false(실패)
+    public boolean insertMemo(Memo memo) {
+        String sql = "INSERT INTO memos (group_id, writer_id, content, created_at) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DBC.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, memo.getGroupId());
+            pstmt.setString(2, memo.getWriterId());
+            pstmt.setString(3, memo.getContent());
+            pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(memo.getCreatedAt()));
+
+            int result = pstmt.executeUpdate();
+
+            // 1행 이상 삽입되면 성공
+            return result > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("메모 삽입 중 DB 오류 발생: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

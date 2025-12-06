@@ -42,12 +42,12 @@ CREATE TABLE schedules (
     CONSTRAINT fk_schedules_users FOREIGN KEY (writer_id) REFERENCES users (user_id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
-CREATE TABLE memoes (
+CREATE TABLE memos (
     memo_id int NOT NULL AUTO_INCREMENT,
     group_id varchar(20) NOT NULL,
     writer_id varchar(20) NOT NULL,
     content text NOT NULL,
-    created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at datetime NOT NULL,
     PRIMARY KEY (memo_id),
     KEY fk_memoes_groups (group_id),
     KEY fk_memoes_users (writer_id),
