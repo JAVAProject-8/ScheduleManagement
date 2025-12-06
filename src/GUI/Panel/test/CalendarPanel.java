@@ -42,6 +42,7 @@ public class CalendarPanel extends JPanel {
         buildCalendar();
     }
 
+    // 캘린더 생성
     private void buildCalendar() {
         datePanel.removeAll();
 
@@ -61,6 +62,7 @@ public class CalendarPanel extends JPanel {
         datePanel.repaint();
     }
 
+    // 특정 날짜를 클릭할 때 일정 테이블 표시
     private void openScheduleDialog(int day) {
         selectedSchedule = null;
         ArrayList<Schedule> data;
@@ -164,6 +166,7 @@ public class CalendarPanel extends JPanel {
                 );
                 System.out.println(day + "일 일정 수정 완료");
             }
+            
             // 가져온 일정 리스트 크기가 0이면
             else if (data.size() == 0) {
                 JOptionPane.showMessageDialog(
@@ -173,6 +176,7 @@ public class CalendarPanel extends JPanel {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
+
             // 수정할 일정을 선택하지 않았을 일때
             else {
                 JOptionPane.showMessageDialog(
