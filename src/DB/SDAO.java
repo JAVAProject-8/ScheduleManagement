@@ -145,7 +145,7 @@ public class SDAO {
                     user.setID(rs.getString("user_id"));
                     user.setName(rs.getString("name"));
                     user.setOrganization(rs.getString("organization"));
-                    user.setBirthDate(rs.getDate("birthdate").toLocalDate());
+                    user.setBirthDate(rs.getDate("birth_date").toLocalDate());
                     user.setPhoneNumber(rs.getString("phone"));
                     user.setEmail(rs.getString("email"));
                 }
@@ -392,7 +392,7 @@ public class SDAO {
     public ArrayList<Member> getMembersByGroupId(String groupId) {
         ArrayList<Member> list = new ArrayList<>();
 
-        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task u.name "
+        String sql = "SELECT m.user_id, m.group_id, m.is_admin, m.task, u.name "
                 + "FROM group_members m "
                 + "JOIN users u ON m.user_id = u.user_id "
                 + "WHERE m.group_id = ? "
@@ -720,17 +720,15 @@ public class SDAO {
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (dto.getGroupId() == null) {
-                pstmt.setNull(1, java.sql.Types.INTEGER);
+                pstmt.setNull(1, java.sql.Types.VARCHAR);
             } else {
                 pstmt.setString(1, dto.getGroupId());
             }
 
             pstmt.setString(2, dto.getScheduleDescription());
-            pstmt.setString(2, dto.getScheduleDescription());
             pstmt.setString(3, dto.getScheduleType());
             pstmt.setTimestamp(4, java.sql.Timestamp.valueOf(dto.getStartAt()));
             pstmt.setTimestamp(5, java.sql.Timestamp.valueOf(dto.getEndAt()));
-
             pstmt.setInt(6, dto.getScheduleId());
 
             int count = pstmt.executeUpdate();
