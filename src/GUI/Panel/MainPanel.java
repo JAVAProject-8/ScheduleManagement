@@ -42,10 +42,7 @@ import java.util.Comparator;
 import DB.SDAO;
 import DB.Schedule;
 import DB.User;
-// import GUI.Panel.test.TestDAO;
-// import DB.SDAO;
 
-// TODO : DB에서 사용자 일정을 가져서 오늘 일정과 마감 일정을 계산 및 정렬
 // 메인 패널
 // 오늘 일정, 마감 일정 표시
 public class MainPanel extends JPanel {
