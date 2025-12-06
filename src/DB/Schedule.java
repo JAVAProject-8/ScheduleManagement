@@ -12,7 +12,7 @@ public class Schedule {
     private LocalDateTime startAt;	// 시작 날짜 + 시간 "2025-11-29 10:00"
     private LocalDateTime endAt;	// 마감 날짜 + 시간 "2025-11-29 12:00"
 
-    // 개인 일정 생성자
+    // 개인 일정 추가 생성자
     public Schedule(String writerId, String description, String type, LocalDateTime startAt,
             LocalDateTime endAt) {
         this.writerId = writerId;
@@ -22,7 +22,7 @@ public class Schedule {
         this.endAt = endAt;
     }
 
-    // 그룹 일정 생성자
+    // 그룹 일정 추가 생성자
     public Schedule(String writerId, String groupId, String description, String type, LocalDateTime startAt,
             LocalDateTime endAt) {
         this.writerId = writerId;
@@ -32,7 +32,19 @@ public class Schedule {
         this.startAt = startAt;
         this.endAt = endAt;
     }
+    
+    // 개인 일정 수정 생성자
+    public Schedule(int id, String writerId, String description, String type, LocalDateTime startAt,
+            LocalDateTime endAt) {
+        this.scheduleId = id;
+        this.writerId = writerId;
+        this.scheduleDescription = description;
+        this.scheduleType = type;
+        this.startAt = startAt;
+        this.endAt = endAt;
+    }
 
+    // 그룹 일정 수정 생성자
     public Schedule(int id, String writerId, String groupId, String description, String type, LocalDateTime startAt,
             LocalDateTime endAt) {
         this.scheduleId = id;
@@ -43,6 +55,7 @@ public class Schedule {
         this.startAt = startAt;
         this.endAt = endAt;
     }
+    
 
     public int getScheduleId() { // 일정 id 리턴
         return scheduleId;

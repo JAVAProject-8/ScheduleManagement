@@ -15,6 +15,10 @@ public class Member {
         this.user_name = user_name;
     }
     
+    public String getUserId() {
+    	return this.user_id;
+    }
+    
     public String getUserName() {
     	return this.user_name;
     }
