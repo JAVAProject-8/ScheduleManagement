@@ -3,8 +3,9 @@ package GUI.Panel.test;
 import javax.swing.*;
 
 import DB.User;
-import GUI.Panel.CalendarPanel;
-import GUI.Panel.TimetablePanel;
+// import GUI.Panel.CalendarPanel;
+// import GUI.Panel.TimetablePanel;
+import GUI.Panel.GroupTimetablePanel;
 
 import java.awt.*;
 
@@ -27,8 +28,8 @@ class TestFrame extends JFrame {
     
     // 구현 완료
     // private MainPanel p = new MainPanel(u);
-    private TimetablePanel p = new TimetablePanel(u);
-    // private GroupPanel p = new GroupPanel(u);
+    // private TimetablePanel p = new TimetablePanel(u);
+    private GroupTimetablePanel p = new GroupTimetablePanel(u);
     
     // private CalendarPanel p = new CalendarPanel(u);
 
