@@ -122,22 +122,24 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 			tableModel.addRow(data);
 		}
 		
-//		// 테스트 모델
-//		for(int i = 1; i <= 12; i++) {
-//			tableModel.addRow(new Object[] {"수업", i, "2025-01-01", "2025-12-31"});
-//		}
-		
 		// 테이블 설정
 		scheduleTable = new JTable(tableModel);
-		scheduleTable.setDragEnabled(false);
-		sorter = new TableRowSorter<>(tableModel);
-		scheduleTable.setRowSorter(sorter);
+		scheduleTable.setRowHeight(20);	// 행 높이 설정
+		scheduleTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);	// 테이블 자동 크기 조절 끄기
+		scheduleTable.getColumnModel().getColumn(0).setPreferredWidth(60);	// 첫 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(1).setPreferredWidth(135);	// 두 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(2).setPreferredWidth(180);	// 세 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(3).setPreferredWidth(180);	// 네 번째 열 너비 설정
+		
 		scheduleTable.getTableHeader().setReorderingAllowed(false);	// 열 순서 변경 금지 처리
 		scheduleTable.getTableHeader().setResizingAllowed(false);	// 열 너비 변경 금지 처리
 		
+		sorter = new TableRowSorter<>(tableModel);
+		scheduleTable.setRowSorter(sorter);
+		
 		// 스크롤 패널 등록
 		JScrollPane scheduleScroll = new JScrollPane(scheduleTable);
-		scheduleScroll.setPreferredSize(new Dimension(0, 250));
+		scheduleScroll.setPreferredSize(new Dimension(560, 250));
 		
 		// 버튼 패널
 		editButton = new JButton("수정");
@@ -150,7 +152,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(editButton);
-		buttonPanel.add(new JLabel("                      "));
+		buttonPanel.add(new JLabel("\t\t\t\t"));
 		buttonPanel.add(deleteButton);
 		buttonPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 		
@@ -203,10 +205,8 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 				int selectedModelIndex = scheduleTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
 				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
 				
-				// 자동완성을 지원하는 JDialog 필요. 인수로 일정 객체 전달
-				// 입력 내용을 기반으로 일정 객체를 수정하여 DB에 전달
-				// DB에서 업데이트하고 성공 여부를 반환
-				// 성공 여부에 따라 JOptionPane 출력
+				Window mainFrame = SwingUtilities.getWindowAncestor(this);
+				new ScheduleDialog((JFrame)mainFrame, "일정 수정", user, selectedSchedule);
 			}
 			// 선택된 행이 없다면
 			else {
