@@ -99,28 +99,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		tableModel.addColumn("시작");
 		tableModel.addColumn("종료");
 		
-		// 별도의 메소드화 필요(갱신용)
-		personalSchedules = SDAO.getInstance().getSchedules(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 일정 ArrayList 반환 
-		
-		// DB에서 전달받은 ArrayList를 시작 시간을 기준으로 하여 정렬
-		Collections.sort(personalSchedules, new Comparator<Schedule>() {
-			@Override
-			public int compare(Schedule s1, Schedule s2) {
-				return s1.getStartAt().compareTo(s2.getStartAt());
-			}
-		});
-		
-		// 정렬한 ArrayList를 테이블 모델에 추가
-		for(int i = 0; i < personalSchedules.size(); i++) {
-			Object[] data = new Object[4];
-			
-			data[0] = personalSchedules.get(i).getScheduleType();
-			data[1] = personalSchedules.get(i).getScheduleDescription();
-			data[2] = personalSchedules.get(i).getStartAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
-			data[3] = personalSchedules.get(i).getEndAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
-			
-			tableModel.addRow(data);
-		}
+		refreshScheduleTable();	// 테이블 갱신
 		
 		// 테이블 설정
 		scheduleTable = new JTable(tableModel);
@@ -206,7 +185,10 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
 				
 				Window mainFrame = SwingUtilities.getWindowAncestor(this);
-				new ScheduleDialog((JFrame)mainFrame, "일정 수정", user, selectedSchedule);
+				ScheduleDialog scheduleDialog = new ScheduleDialog((JFrame)mainFrame, "일정 수정", user, selectedSchedule);
+				scheduleDialog.setVisible(true);	// Modal이 설정되어 있으므로 Dialog dispose()시까지 스레드 대기
+				
+				refreshScheduleTable();	// 테이블 갱신
 			}
 			// 선택된 행이 없다면
 			else {
@@ -231,6 +213,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 					// 삭제 성공
 					if(result) {
 						JOptionPane.showMessageDialog(null, "일정 삭제 성공", "Information", JOptionPane.PLAIN_MESSAGE);
+						refreshScheduleTable();	// 테이블 갱신
 					}
 					// 삭제 실패
 					else {
@@ -262,29 +245,62 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 		
 		// 검색 기간 설정(Gemini 참조)
-		String startDate = startYearField.getText().trim() + "-" + startMonthField.getText().trim() + "-" + startDateField.getText().trim();	// 사용자가 입력한 시작일
-		String endDate = endYearField.getText().trim() + "-" + endMonthField.getText().trim() + "-" + endDateField.getText().trim();	// 사용자가 입력한 종료일
-		if(startDate.length() == 10 || endDate.length() == 10) {	// 둘 중 하나라도 입력 되었다면
-			filters.add(new RowFilter<Object, Object>(){	// RowFilter 클래스를 상속받는 익명 클래스 생성
-				@Override
-				public boolean include(Entry<?, ?> entry) {	// 메소드 재정의
-					String rowStartDate = entry.getStringValue(2).substring(0, 10);	// 인덱스로 시작일을 가져와 10글자로 가공("yyyy-MM-dd")
-					String rowEndDate = entry.getStringValue(3).substring(0, 10);	// 인덱스로 종료일을 가져와 10글자로 가공
-					
-					boolean isOverStart = (startDate.length() != 10) || (rowEndDate.compareTo(startDate) >= 0);	// 입력되지 않았거나, 일정 종료일이 검색 시작일 이후인지
-					boolean isOverEnd = (endDate.length() != 10) || (rowStartDate.compareTo(endDate) <= 0);		// 입력되지 않았거나, 일정 시작일이 검색 종료일 이전인지
-					
-					return isOverStart && isOverEnd;	// 두 값이 모두 True 일 시 해당 행을 화면에 출력
-				}
-			});
-		}
+		String startDate = startYearField.getText().trim() + startMonthField.getText().trim() + startDateField.getText().trim();	// 사용자가 입력한 시작일
+		String endDate = endYearField.getText().trim() + endMonthField.getText().trim() + endDateField.getText().trim();	// 사용자가 입력한 종료일
 		
+		filters.add(new RowFilter<Object, Object>() {
+			@Override
+			public boolean include(Entry<?, ?> entry) {
+				String rawStartDate = entry.getStringValue(2).toString().replaceAll("[^0-9]", "").substring(0, 8);	// 인덱스로 시작일을 가져와 10글자로 가공("yyyy-MM-dd")
+				String rawEndDate = entry.getStringValue(3).toString().replaceAll("[^0-9]", "").substring(0, 8);	// 인덱스로 종료일을 가져와 10글자로 가공
+
+				String checkStart;
+				if(startDate.length() == 8) checkStart = startDate;
+				else checkStart = "00000101";
+				
+				String checkEnd;
+				if(endDate.length() == 8) checkEnd = endDate;
+				else checkEnd = "99991231";
+				
+				boolean condition1 = rawEndDate.compareTo(checkStart) >= 0;	// 일정 종료일이 검색 시작일보다 같거나 큰지
+				boolean condition2 = rawStartDate.compareTo(checkEnd) <= 0;	// 일정 시작일이 검색 종료일보다 같거나 작은지
+				
+				return condition1 && condition2;	// 두 값이 모두 True 일 시 해당 행을 화면에 출력
+			}
+		});
+			
 		// 검색(필터링)
 		if(filters.size() == 0) {		// 저장된 필터가 없는 경우
 			sorter.setRowFilter(null);	// 모든 행을 출력
 		}
 		else {							// 저장된 필터가 있는 경우
 			sorter.setRowFilter(RowFilter.andFilter(filters));	// 필터에 맞추어 행을 출력
+		}
+	}
+	
+	public void refreshScheduleTable() {
+		tableModel.setRowCount(0);	// 테이블 모델 초기화
+		
+		personalSchedules = SDAO.getInstance().getSchedules(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 일정 ArrayList 반환 
+		
+		// DB에서 전달받은 ArrayList를 시작 시간을 기준으로 하여 정렬
+		Collections.sort(personalSchedules, new Comparator<Schedule>() {
+			@Override
+			public int compare(Schedule s1, Schedule s2) {
+				return s1.getStartAt().compareTo(s2.getStartAt());
+			}
+		});
+		
+		// 정렬한 ArrayList를 테이블 모델에 추가
+		for(int i = 0; i < personalSchedules.size(); i++) {
+			Object[] data = new Object[4];
+			
+			data[0] = personalSchedules.get(i).getScheduleType();
+			data[1] = personalSchedules.get(i).getScheduleDescription();
+			data[2] = personalSchedules.get(i).getStartAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			data[3] = personalSchedules.get(i).getEndAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			
+			tableModel.addRow(data);
 		}
 	}
 }

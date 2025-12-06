@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 
 public class GroupMemberInfoDialog extends JDialog {
 	// 그룹원 세부정보
-	JTextField nameField, organizationField, phoneNumberField, emailField;	// 이름, 소속, 전화번호, 이메일
+	JTextField nameField, idField, organizationField, phoneNumberField, emailField;	// 이름, 소속, 전화번호, 이메일
 	JLabel positionField, birthDateField;	// 직책, 생일
 	JButton checkButton;	// 확인(종료) 버튼
 	
@@ -27,8 +27,9 @@ public class GroupMemberInfoDialog extends JDialog {
 		setLayout(new BorderLayout());
 		
 		JPanel labelsPanel = new JPanel();
-		labelsPanel.setLayout(new GridLayout(6, 1, 0, 5));
+		labelsPanel.setLayout(new GridLayout(7, 1, 0, 5));
 		labelsPanel.add(new JLabel("이름", JLabel.RIGHT));
+		labelsPanel.add(new JLabel("아이디", JLabel.RIGHT));
 		labelsPanel.add(new JLabel("직책", JLabel.RIGHT));
 		labelsPanel.add(new JLabel("소속", JLabel.RIGHT));
 		labelsPanel.add(new JLabel("생년월일", JLabel.RIGHT));
@@ -40,7 +41,13 @@ public class GroupMemberInfoDialog extends JDialog {
 		nameField.setEditable(false);
 		nameField.setBackground(Color.WHITE);
 		
+		idField = new JTextField(15);
+		idField.setEditable(false);
+		idField.setBackground(Color.WHITE);
+		
 		positionField = new JLabel();
+		Font defaultFont = positionField.getFont();
+		positionField.setFont(new Font(defaultFont.getName(), Font.PLAIN, defaultFont.getSize()));
 		positionField.setOpaque(true);
 		positionField.setBackground(Color.WHITE);
 		
@@ -49,6 +56,7 @@ public class GroupMemberInfoDialog extends JDialog {
 		organizationField.setBackground(Color.WHITE);
 		
 		birthDateField = new JLabel();
+		birthDateField.setFont(new Font(defaultFont.getName(), Font.PLAIN, defaultFont.getSize()));
 		birthDateField.setOpaque(true);
 		birthDateField.setBackground(Color.WHITE);
 		
@@ -61,8 +69,9 @@ public class GroupMemberInfoDialog extends JDialog {
 		emailField.setBackground(Color.WHITE);
 		
 		JPanel fieldsPanel = new JPanel();
-		fieldsPanel.setLayout(new GridLayout(6, 1, 0, 5));
+		fieldsPanel.setLayout(new GridLayout(7, 1, 0, 5));
 		fieldsPanel.add(nameField);
+		fieldsPanel.add(idField);
 		fieldsPanel.add(positionField);
 		fieldsPanel.add(organizationField);
 		fieldsPanel.add(birthDateField);
@@ -97,6 +106,7 @@ public class GroupMemberInfoDialog extends JDialog {
 	
 	public void setUserInfo() {
 		nameField.setText(user.getName());
+		idField.setText(user.getID());
 		String position = member.getPosition();
 		if(position.equals("Y")) {
 			position = "팀장";
@@ -104,7 +114,7 @@ public class GroupMemberInfoDialog extends JDialog {
 		else if(position.equals("N")) {
 			position = "팀원";
 		}
-		positionField.setText(position);	// 이 부분은 Member 테이블에서 가져와야 함
+		positionField.setText(position);
 		organizationField.setText(user.getOrganization());
 		birthDateField.setText(user.getBirthDate().format(DateTimeFormatter.ofPattern("YYYY년 MM월 dd일")));
 		phoneNumberField.setText(user.getPhoneNumber().substring(0, 3) + "-" + user.getPhoneNumber().substring(3, 7) + "-" + user.getPhoneNumber().substring(7));
