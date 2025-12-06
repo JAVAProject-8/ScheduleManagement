@@ -14,6 +14,7 @@ public class DBC {
     public static Connection connection = null;
     
     
+    
     // 테스트용 메인 메소드
     public static void main(String[] args) {
     	connect();
