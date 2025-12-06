@@ -1,36 +1,5 @@
 package GUI.Panel;
 
-/* 
-import javax.swing.*;
-import java.awt.*;
-
-public class MainPanel extends JPanel {
-    private JTextArea todayArea;
-    private JTextArea deadlineArea;
-
-    public MainPanel() {
-        setLayout(new BorderLayout());
-
-        JPanel top = new JPanel(new GridLayout(1, 2));
-        JLabel label = new JLabel("오늘의 일정");
-        label.setHorizontalAlignment(SwingConstants.CENTER);
-        top.add(label);
-        JLabel label_1 = new JLabel("마감 임박");
-        label_1.setHorizontalAlignment(SwingConstants.CENTER);
-        top.add(label_1);
-        add(top, BorderLayout.NORTH);
-
-        JPanel center = new JPanel(new GridLayout(1, 2));
-        todayArea = new JTextArea();
-        deadlineArea = new JTextArea();
-
-        center.add(new JScrollPane(todayArea));
-        center.add(new JScrollPane(deadlineArea));
-
-        add(center, BorderLayout.CENTER);
-    }
-}
- */
 
 import java.awt.*;
 import javax.swing.*;
