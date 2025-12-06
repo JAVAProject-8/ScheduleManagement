@@ -209,8 +209,6 @@ public class CalendarPanel extends JPanel {
 
         // 일정 삭제를 클릭할 때
         if (result == JOptionPane.CANCEL_OPTION) {
-            // TODO : 테이블에서 선택한 일정을 삭제
-
             SDAO.getInstance().deleteSchedule(selectedSchedule.getScheduleId());
             // 삭제할 일정을 선택하고, 가져온 일정 리스트 크기가 0 이상이면
             if (selectedSchedule != null && data.size() > 0) {
