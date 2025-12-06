@@ -3,8 +3,11 @@ package GUI.Panel.test;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import DB.Group;
+import DB.SDAO;
 // import DB.SDAO;
 import DB.Schedule;
+import DB.User;
 
 import java.awt.*;
 import java.time.*;
@@ -14,17 +17,17 @@ public class GroupPanel extends JPanel {
     private JComboBox<String> groupComboBox;
     private JTable table;
     private DefaultTableModel model;
-    private String userId = null;
+    private User u = null;
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
     private final int START_HOUR = 9;
-    private final int END_HOUR = 18;
+    private final int END_HOUR = 23;
 
     private Map<String, Color> memberColorMap = new HashMap<>();
 
-    public GroupPanel(String userId) {
-        this.userId = userId;
+    public GroupPanel(User u) {
+        this.u = u;
 
         setLayout(new BorderLayout());
         
@@ -101,21 +104,26 @@ public class GroupPanel extends JPanel {
 
     /** Mock DAO로 그룹 목록 가져오기 */
     private void loadGroupList() {
-        ArrayList<String> groups = TestDAO.getInstance().getGroupList();
-        for (String g : groups) {
-            groupComboBox.addItem(g);
+        ArrayList<Group> groups = SDAO.getInstance().getMyGroups(u.getID());
+        for (Group g : groups) {
+            groupComboBox.addItem(g.getGroupName());
         }
     }
 
     /** 특정 그룹의 전체 일정 로드 */
     private void loadSchedulesForGroup(String groupName) {
         clearTable();
-
+        // 그룹 명의 di 찾기
+        ArrayList<Group> groups = SDAO.getInstance().getMyGroups(u.getID());
+        String gid = null;
+        for (Group g : groups) {
+            if (g.getGroupName().equals(groupName)) {
+                gid = g.getGroupId();
+                break;
+            }
+        }
         // 그룹원 일정 로드
-        ArrayList<Schedule> schedules = TestDAO.getInstance().getGroupSchedules(groupName);
-
-        // 그룹원 별 색상 매핑
-        // assignMemberColors(schedules);
+        ArrayList<Schedule> schedules = SDAO.getInstance().getGroupSchedules(gid);
 
         // 테이블 배치
         for (Schedule s : schedules) {
@@ -124,18 +132,6 @@ public class GroupPanel extends JPanel {
 
         table.repaint();
     }
-/* 
-    //  일정 객체를 시간표 테이블에 배치
-    private void placeScheduleToTable(Schedule s) {
-
-        LocalDateTime start = parse(s.getStartAt());
-        int col = start.getDayOfWeek().getValue(); // 월=1 ~ 일=7
-        int row = start.getHour() - 8; // 08시=0
-
-        if (row >= 0 && row < 7 && col >= 1 && col <= 7) {
-            model.setValueAt(s, row, col);
-        }
-    } */
 
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
@@ -159,19 +155,6 @@ public class GroupPanel extends JPanel {
             model.setValueAt(schedule, row, col);
         }
     }
-    /*
-    // TODO : 그룹원 별 색상 구분
-    //그룹원마다 고유 색상 부여
-    private void assignMemberColors(List<Schedule> list) {
-        memberColorMap.clear();
-     
-        for (Schedule s : list) {
-            String member = s.getWriterId();
-            if (!memberColorMap.containsKey(member)) {
-                memberColorMap.put(member, getColorForSchedule(member));
-            }
-        }
-    } */
 
     /** 시간표 초기화 */
     private void clearTable() {
@@ -181,17 +164,6 @@ public class GroupPanel extends JPanel {
             }
         }
     }
-
-    /**
-     * yyyy-MM-dd HH:mm 파싱
-     * 
-     * @param dt yyyy-MM-dd HH:mm 형식에 날짜+시간
-     * @return 날짜 반환
-     */
-    /* private LocalDateTime parseDateTime(String dt) {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(dt, fmt);
-    } */
 
     // 요일 -> 컬럼 변환 (월 1 ... 일 7)
     private int dayOfWeekToColumn(DayOfWeek dow) {

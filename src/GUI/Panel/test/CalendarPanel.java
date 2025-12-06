@@ -3,15 +3,15 @@ package GUI.Panel.test;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import DB.SDAO;
 import DB.Schedule;
-// import GUI.AddScheduleDialog;
+import DB.User;
+import GUI.Dialog.ScheduleDialog;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-
-// TODO : 메인 기능은 구현되었지만 캘린터 디자인 수정 및 사용자가 입력한 일정을 DB에 산입한다.
 
 public class CalendarPanel extends JPanel {
     private JLabel monthLabel;
@@ -20,11 +20,11 @@ public class CalendarPanel extends JPanel {
     private LocalDate today = LocalDate.now();
     private LocalDate currentMonth = LocalDate.of(today.getYear(), today.getMonth(), 1);
     
-    private String userId = null;
+    private User u = null;
     private Schedule selectedSchedule = null;
 
-    public CalendarPanel(String userId) {
-        this.userId = userId;
+    public CalendarPanel(User u) {
+        this.u = u;
 
         setLayout(new BorderLayout());
 
@@ -65,7 +65,7 @@ public class CalendarPanel extends JPanel {
     // 특정 날짜를 클릭할 때 일정 테이블 표시
     private void openScheduleDialog(int day) {
         selectedSchedule = null;
-        ArrayList<Schedule> data;
+        ArrayList<Schedule> data = new ArrayList<>();
 
         DefaultTableModel tableModel;
         JTable scheduleTable; // 일정 테이블
@@ -78,12 +78,27 @@ public class CalendarPanel extends JPanel {
             }
         };
 
-        data = TestDAO.getInstance().getScheduleDate(currentMonth.getYear(), currentMonth.getMonthValue(), day, userId);
+        ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(u.getID());
 
+        for (Schedule s : schedules) {
+            if (
+                s.getStartAt().getYear() == currentMonth.getYear() && 
+                s.getStartAt().getMonthValue() == currentMonth.getMonthValue() &&
+                s.getStartAt().getDayOfMonth() == day) {
+
+                System.out.println(s.getStartAt().toLocalDate() + " -> " + LocalDate.of(currentMonth.getYear(), currentMonth.getMonthValue(), day));
+                data.add(s);
+                System.out.println(data.size());
+            }
+        }
+        // data = TestDAO.getInstance().getScheduleDate(LocalDate.of(currentMonth.getYear(), currentMonth.getMonthValue(), day), u.getID());
+        
+        
         for (Schedule s : data) {
             tableModel.addRow(new Object[] { s.getScheduleType(), s.getScheduleDescription(), s.getStartAt().toLocalDate(), s.getEndAt().toLocalDate() });
             System.out.println("일정 -> 테이블에 추가");
         }
+        
 
 		// 테이블 설정
 		scheduleTable = new JTable(tableModel);
@@ -109,10 +124,13 @@ public class CalendarPanel extends JPanel {
         // 테이블 행 선택
         scheduleTable.addMouseListener((MouseListener) new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
+                
                 int row = scheduleTable.getSelectedRow();
+
                 if (row >= 0) {
                     selectedSchedule = data.get(row);
                 }
+                
             }
         });
 
@@ -136,15 +154,12 @@ public class CalendarPanel extends JPanel {
             butTitle[0]
         );
 
-
-        // TODO : 일정 추가, 수정, 삭제 공통 메소드화
         // 일정 추가 버튼을 클릭할 때
         if (result == JOptionPane.YES_OPTION) {
-            // TODO : DB에 일정 추가 
-
-            new AddScheduleDialogT(
+            new ScheduleDialog(
                 null, 
-                "일정 추가", 
+                "일정 추가",
+                u,
                 LocalDate.of(
                     currentMonth.getYear(), 
                     currentMonth.getMonthValue(), 
@@ -152,19 +167,20 @@ public class CalendarPanel extends JPanel {
                 )
             );
             
-            System.out.println(day + "일 일정 추가 완료");
+            // System.out.println(day + "일 일정 추가 완료");
         }
 
         // 일정 수정 버튼을 클릭할 때
         if (result == JOptionPane.NO_OPTION) {
             // 수정할 일정을 선택하고, 가져온 일정 리스트 크기가 0 이상이면
             if (selectedSchedule != null && data.size() > 0) {
-                new AddScheduleDialogT(
+                new ScheduleDialog(
                     null, 
-                    "일정 수정", 
+                    "일정 수정",
+                    u,
                     selectedSchedule
                 );
-                System.out.println(day + "일 일정 수정 완료");
+                // System.out.println(day + "일 일정 수정 완료");
             }
             
             // 가져온 일정 리스트 크기가 0이면
@@ -192,7 +208,8 @@ public class CalendarPanel extends JPanel {
         // 일정 삭제를 클릭할 때
         if (result == JOptionPane.CANCEL_OPTION) {
             // TODO : 테이블에서 선택한 일정을 삭제
-            
+
+            SDAO.getInstance().deleteSchedule(selectedSchedule.getScheduleId());
             // 삭제할 일정을 선택하고, 가져온 일정 리스트 크기가 0 이상이면
             if (selectedSchedule != null && data.size() > 0) {
                 System.out.println(day + "일 일정 삭제 완료");

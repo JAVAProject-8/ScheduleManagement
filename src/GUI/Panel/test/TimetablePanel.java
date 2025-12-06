@@ -4,7 +4,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import DB.SDAO;
 import DB.Schedule;
+import DB.User;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -14,16 +16,16 @@ import java.time.LocalDateTime;
 public class TimetablePanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
-    private String userId = null;
+    private User u = null;
     // 요일
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
     // 시간
     private final int START_HOUR = 9;
-    private final int END_HOUR = 18;
+    private final int END_HOUR = 23;
     
     // 패널 초기화
-    public TimetablePanel(String userId) {
-        this.userId = userId;
+    public TimetablePanel(User u) {
+        this.u = u;
         setLayout(new BorderLayout());
         initTable();
         loadTestData(); // Mock DAO 호출
@@ -80,8 +82,10 @@ public class TimetablePanel extends JPanel {
 
     /** Mock DAO 데이터 로드 */
     private void loadTestData() {
-        ArrayList<Schedule> schedules = TestDAO.getInstance().getPersonalSchedule(userId);
+        ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(u.getID());
         for (Schedule s : schedules) {
+            System.out.println(s.getScheduleId() + " = " + s.getStartAt().getDayOfMonth() + " ~ " + s.getEndAt().getDayOfMonth());
+            // if (u.getID() == s.getWriterId()) addScheduleToTable(s);
             addScheduleToTable(s);
         }
     }
@@ -90,7 +94,7 @@ public class TimetablePanel extends JPanel {
     private void addScheduleToTable(Schedule schedule) {
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
-
+        
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
         int endRow = end.getHour() - START_HOUR;
