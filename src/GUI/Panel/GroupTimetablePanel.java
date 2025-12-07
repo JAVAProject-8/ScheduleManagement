@@ -167,6 +167,15 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         // 테이블의 기존 일정을 모두 초기화함
         clearTable();
         
+        // 먼저 그룹 일정을 시간표에 표시
+        ArrayList<Schedule> groupSchedules = SDAO.getInstance().getGroupSchedules(selectedGroup.getGroupId());
+        
+        for(Schedule s : groupSchedules) {
+        	if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) {
+                addScheduleToTable(s);
+            }
+        }
+        
         // 선택된 그룹 기준으로 그룹에 속한 멤버 목록 조회
         ArrayList<Member> members = SDAO.getInstance().getMembersByGroupId(selectedGroup.getGroupId());
         
@@ -174,9 +183,10 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         for (Member m : members) {
             // System.out.println(m.getUserId());
             // 해당 유저가 선택된 그룹에서 작성한 일정만 조회
-            ArrayList<Schedule> schedules = SDAO.getInstance().getSchedulesByUserAndGroup(m.getUserId(), selectedGroup.getGroupId());
+            //ArrayList<Schedule> schedules = SDAO.getInstance().getSchedulesByUserAndGroup(m.getUserId(), selectedGroup.getGroupId());
+            ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(m.getUserId());
 
-            // System.out.println(" member=" + m.getUserId() + ", schedules=" + (schedules == null ? 0 : schedules.size()));
+            //System.out.println(" member=" + m.getUserId() + ", schedules=" + (schedules == null ? 0 : schedules.size()));
             
             // 조회된 일정들을 테이블에 배치
             for (Schedule s : schedules) {
@@ -284,6 +294,10 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
                 Schedule s = (Schedule) value;
                 setText(s.getScheduleDescription());
                 c.setBackground(getColorForSchedule(s.getWriterId()));
+                setToolTipText(s.getScheduleDescription());
+            }
+            else {
+            	setToolTipText(null);
             }
 
             return c;

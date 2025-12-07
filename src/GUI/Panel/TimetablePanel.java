@@ -59,7 +59,7 @@ public class TimetablePanel extends JPanel {
         }   
 
         // 테이블 열 크기
-        table.setRowHeight(50);
+        table.setRowHeight(40);
         // 수평선 표시
         table.setShowHorizontalLines(true);
         // 수직선 표시
@@ -150,17 +150,21 @@ public class TimetablePanel extends JPanel {
             if (value instanceof Schedule) {
                 Schedule s = (Schedule) value;
                 setText(s.getScheduleDescription());
-                c.setBackground(getColorForSchedule(s.getWriterId()));
+                c.setBackground(getColorForSchedule(s.getScheduleDescription()));
+                setToolTipText(s.getScheduleDescription());
+            }
+            else{
+            	setToolTipText(null);
             }
 
             return c;
         }
     }
 
-    /** 일정 ID 기반 해시 색상 생성 */
+    /** 일정 내용 기반 해시 색상 생성 */
     // 렌덤으로 0 ~ 255 
-    private Color getColorForSchedule(String id) {
-        int hash = Math.abs(id.hashCode());
+    private Color getColorForSchedule(String str) {
+        int hash = Math.abs(str.hashCode());
         int r = Math.abs((hash * 37) % 200 + 30);
         int g = Math.abs((hash * 67) % 200 + 30);
         int b = Math.abs((hash * 97) % 200 + 30);
