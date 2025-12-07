@@ -244,7 +244,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         int startRow = start.getHour() - START_HOUR;
         int endRow = end.getHour() - START_HOUR;
         
-        if(end.getMinute() == 0 && endRow > startRow) {
+        if(end.getMinute() == 30 && endRow > startRow) {
         	endRow--;
         }
         
@@ -292,9 +292,11 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
             // 일정 추가된 위치 색상 추가
             if (value instanceof Schedule) {
                 Schedule s = (Schedule) value;
+                User findUser = SDAO.getInstance().getUserInfo(s.getWriterId());
+                
                 setText(s.getScheduleDescription());
                 c.setBackground(getColorForSchedule(s.getWriterId()));
-                setToolTipText(s.getScheduleDescription());
+                setToolTipText("[" + findUser.getName() + "] " + s.getScheduleDescription());
             }
             else {
             	setToolTipText(null);

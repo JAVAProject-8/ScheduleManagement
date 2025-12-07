@@ -113,7 +113,11 @@ public class TimetablePanel extends JPanel {
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
         int endRow = end.getHour() - START_HOUR;
-
+        
+        if(end.getMinute() == 30 && endRow > startRow) {
+        	endRow--;
+        }
+        
         // 범위 벗어나면 무시
         if (col < 1 || col > 7)
             return;
