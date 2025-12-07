@@ -81,6 +81,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		
 		memoArea = new JTextArea(20, 30);
 		memoArea.setEditable(false);
+		memoArea.setLineWrap(true);	// 자동 줄바꿈 처리
 		
 		memoField = new JTextField(30);
 		inputButton = new JButton("입력");
@@ -284,11 +285,11 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		for(int i = 0; i < memos.size(); i++) {
 			User otherUser = SDAO.getInstance().getUserInfo(memos.get(i).getWriterId());	// ID를 매개변수로 User 객체를 가져옴
 			
-			String line = otherUser.getName() + "("
-					+ memos.get(i).getCreatedAt().format(DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")) + "): "
+			String line = "[" + otherUser.getName() + "] "
+					+ memos.get(i).getCreatedAt().format(DateTimeFormatter.ofPattern("yy-MM-dd HH:mm")) + "\n"
 					+ memos.get(i).getContent();
 			
-			memoArea.append(line + "\n");
+			memoArea.append(line + "\n\n");
 		}
 	}
 	
