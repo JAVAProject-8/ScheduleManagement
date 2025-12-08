@@ -7,6 +7,7 @@ import DB.Group;
 import DB.SDAO;
 import DB.Schedule;
 import DB.User;
+import GUI.Dialog.ScheduleDialog;
 import DB.Member;
 
 import java.awt.*;
@@ -104,7 +105,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
     	
     	if(selectedIndex != -1) {
 	    	selectedGroup = groups.get(selectedIndex);
-            System.out.println("선택 : " + selectedGroup.getGroupId());
+            //System.out.println("선택 : " + selectedGroup.getGroupId());
 	    	loadSchedulesForGroup();
     	}
     }
@@ -150,6 +151,42 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         table.getTableHeader().setReorderingAllowed(false);
         // 테이블 크기조정 불기
         table.getTableHeader().setResizingAllowed(false);
+        table.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		if(e.getClickCount() == 2) {	// 더블 클릭 시
+        			int row = table.getSelectedRow();
+        			int col = table.getSelectedColumn();
+        			
+        			if (col < 1) {	// 시간표 외 영역 선택 시
+        				return;
+        			}
+        			
+        			Object obj = model.getValueAt(row, col);	// 모델에 존재하는 Object를 가져옴
+        			
+        			if(obj instanceof Schedule) {	// 해당 Object가 Schedule 객체라면
+        				Schedule selectedSchedule = (Schedule)obj;	// 형변환
+        				
+        				if(selectedSchedule.getGroupId() != null) {
+        					ScheduleDialog scheduleDialog = new ScheduleDialog(null, "일정 수정", u, selectedGroup, selectedSchedule);	// 일정 수정
+            				scheduleDialog.setVisible(true);
+        				}
+        			}
+        			else {
+        				LocalDate today = LocalDate.now();	// 현재 날짜
+            			LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
+            			
+            			LocalDate selectedDate = mondayDate.plusDays(col - 1);			// 선택일 계산
+            			LocalTime selectedTime = LocalTime.of(START_HOUR + row, 30);	// 선택 시간 계산
+            			LocalDateTime selectedDateTime = LocalDateTime.of(selectedDate, selectedTime);
+            			
+            			new ScheduleDialog(null, "일정 추가", u, selectedGroup, selectedDateTime);
+        			}
+        			
+        			loadSchedulesForGroup();
+        		}
+        	}
+        });
         
         tableScrollPane = new JScrollPane(table);
     }
@@ -163,7 +200,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
     }
 
     /** 특정 그룹의 전체 일정 로드 */
-    private void loadSchedulesForGroup() {
+    public void loadSchedulesForGroup() {
         // 테이블의 기존 일정을 모두 초기화함
         clearTable();
         
@@ -199,7 +236,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
                     addScheduleToTable(s);
                 }
                 // 이번 주 일정이 아닌 경우 로그 출력
-                else System.out.println(s.getScheduleId() + ", " + s.getWriterId() + "는 요번주에 포함 하지 않음");
+                //else System.out.println(s.getScheduleId() + ", " + s.getWriterId() + "는 요번주에 포함 하지 않음");
             }
 
         }
@@ -238,7 +275,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
 
-        System.out.println("add : " + schedule.getScheduleId());
+        //System.out.println("add : " + schedule.getScheduleId());
 
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
@@ -294,9 +331,16 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
                 Schedule s = (Schedule) value;
                 User findUser = SDAO.getInstance().getUserInfo(s.getWriterId());
                 
-                setText(s.getScheduleDescription());
-                c.setBackground(getColorForSchedule(s.getWriterId()));
-                setToolTipText("[" + findUser.getName() + "] " + s.getScheduleDescription());
+                if(s.getGroupId() != null) {	// 그룹 일정이라면
+                	setText(s.getScheduleDescription());
+                	c.setBackground(getColorForSchedule(s.getGroupId()));
+                	setToolTipText(s.getScheduleDescription());
+                }
+                else {
+                	setText(findUser.getName() + " 개인일정");
+                	c.setBackground(getColorForSchedule(s.getWriterId()));
+                	setToolTipText(findUser.getName() + " 개인일정");
+                }
             }
             else {
             	setToolTipText(null);
