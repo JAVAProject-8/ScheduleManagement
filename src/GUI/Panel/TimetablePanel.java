@@ -1,5 +1,7 @@
 package GUI.Panel;
 
+import GUI.Dialog.*;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -9,10 +11,12 @@ import DB.Schedule;
 import DB.User;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 
 public class TimetablePanel extends JPanel {
@@ -29,8 +33,9 @@ public class TimetablePanel extends JPanel {
     public TimetablePanel(User u) {
         this.u = u;
         setLayout(new BorderLayout());
+        
         initTable();
-        loadTestData(); // Mock DAO 호출
+        loadScheduleData(); // Mock DAO 호출
     }
 
     /** 테이블 초기화 */
@@ -74,12 +79,48 @@ public class TimetablePanel extends JPanel {
         table.getTableHeader().setReorderingAllowed(false);
         // 테이블 크기조정 불기
         table.getTableHeader().setResizingAllowed(false);
+        table.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		if(e.getClickCount() == 2) {	// 더블 클릭 시
+        			int row = table.getSelectedRow();
+        			int col = table.getSelectedColumn();
+        			
+        			if (col < 1) {	// 시간표 외 영역 선택 시
+        				return;
+        			}
+        			
+        			Object obj = model.getValueAt(row, col);	// 모델에 존재하는 Object를 가져옴
+        			
+        			if(obj instanceof Schedule) {	// 해당 Object가 Schedule 객체라면
+        				Schedule selectedSchedule = (Schedule)obj;	// 형변환
+        				
+        				ScheduleDialog scheduleDialog = new ScheduleDialog(null, "일정 수정", u, selectedSchedule);	// 일정 수정
+        				scheduleDialog.setVisible(true);
+        			}
+        			else {
+        				LocalDate today = LocalDate.now();	// 현재 날짜
+            			LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
+            			
+            			LocalDate selectedDate = mondayDate.plusDays(col - 1);			// 선택일 계산
+            			LocalTime selectedTime = LocalTime.of(START_HOUR + row, 30);	// 선택 시간 계산
+            			LocalDateTime selectedDateTime = LocalDateTime.of(selectedDate, selectedTime);
+            			
+            			new ScheduleDialog(null, "일정 추가", u, selectedDateTime);
+        			}
+        			
+        			loadScheduleData();
+        		}
+        	}
+        });
         // 패널에 테이블 추가
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
     /** DAO 데이터 로드 */
-    private void loadTestData() {
+    public void loadScheduleData() {
+    	clearTable();
+    	
         ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(u.getID());
         for (Schedule s : schedules) {
             // startOfWeek <= x <= endOfWeek
@@ -106,7 +147,7 @@ public class TimetablePanel extends JPanel {
 
     /** 일정 1개를 시간표 테이블에 삽입 */
     private void addScheduleToTable(Schedule schedule) {
-        System.out.println(schedule.getScheduleId() + ", " + schedule.getScheduleDescription() + ", " + schedule.getStartAt().toLocalDate() + ", " + schedule.getStartAt());
+        //System.out.println(schedule.getScheduleId() + ", " + schedule.getScheduleDescription() + ", " + schedule.getStartAt().toLocalDate() + ", " + schedule.getStartAt());
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
         
@@ -129,6 +170,15 @@ public class TimetablePanel extends JPanel {
         // 일정 시간 블록 채우기
         for (int row = startRow; row <= endRow; row++) {
             model.setValueAt(schedule, row, col);
+        }
+    }
+    
+    /** 시간표 초기화 */
+    private void clearTable() {
+        for (int row = 0; row < (END_HOUR - START_HOUR + 1); row++) {
+            for (int col = 1; col <= 7; col++) {
+                model.setValueAt("", row, col);
+            }
         }
     }
 
