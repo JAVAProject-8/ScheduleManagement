@@ -87,9 +87,9 @@ public class CalendarPanel extends JPanel {
                 s.getStartAt().getMonthValue() == currentMonth.getMonthValue() &&
                 s.getStartAt().getDayOfMonth() == day) {
 
-                System.out.println(s.getStartAt().toLocalDate() + " -> " + LocalDate.of(currentMonth.getYear(), currentMonth.getMonthValue(), day));
+                //System.out.println(s.getStartAt().toLocalDate() + " -> " + LocalDate.of(currentMonth.getYear(), currentMonth.getMonthValue(), day));
                 data.add(s);
-                System.out.println(data.size());
+                //System.out.println(data.size());
             }
         }
         // data = TestDAO.getInstance().getScheduleDate(LocalDate.of(currentMonth.getYear(), currentMonth.getMonthValue(), day), u.getID());
@@ -97,7 +97,7 @@ public class CalendarPanel extends JPanel {
         
         for (Schedule s : data) {
             tableModel.addRow(new Object[] { s.getScheduleType(), s.getScheduleDescription(), s.getStartAt().toLocalDate(), s.getEndAt().toLocalDate() });
-            System.out.println("일정 -> 테이블에 추가");
+            //System.out.println("일정 -> 테이블에 추가");
         }
         
 
@@ -212,13 +212,13 @@ public class CalendarPanel extends JPanel {
             SDAO.getInstance().deleteSchedule(selectedSchedule.getScheduleId());
             // 삭제할 일정을 선택하고, 가져온 일정 리스트 크기가 0 이상이면
             if (selectedSchedule != null && data.size() > 0) {
-                System.out.println(day + "일 일정 삭제 완료");
+                //System.out.println(day + "일 일정 삭제 완료");
             }
             // 가져온 일정 리스트 크기가 0이면
             else if (data.size() == 0) {
                 JOptionPane.showMessageDialog(
                     this,
-                    "삭제할 일정을 없습니다.",
+                    "삭제할 일정이 없습니다.",
                     "경고",
                     JOptionPane.WARNING_MESSAGE);
                 return;
