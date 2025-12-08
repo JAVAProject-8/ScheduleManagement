@@ -2,6 +2,7 @@ package GUI.Dialog;
 
 import DB.Schedule;
 import DB.User;
+import DB.Group;
 import DB.SDAO;
 
 import javax.swing.*;
@@ -20,57 +21,82 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 	JButton checkButton;	// 확인 버튼
 	
 	User user = null;
+	Group group = null;
 	Schedule schedule = null;
 	
-	// 일정 추가 생성자(기본)
+	int type = -1;	// 실행 타입(0: 개인 일정 추가, 1: 개인 일정 수정, 2: 그룹 일정 추가, 3: 그룹 일정 수정)
+	
+	// 개인 일정 추가 생성자(메뉴)
 	public ScheduleDialog(JFrame frame, String title, User _u) {
 		super(frame, title, true);
 		user = _u;
+		type = 0;
 		
 		initComponents();
-		
-		pack();	// 크기 자동 맞춤
-		setResizable(false);	// 크기 조정 불가
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
-		setLocationRelativeTo(null);	// 모니터 중앙 표시
 		setVisible(true);
 	}
 	
-	// 일정 추가 생성자(캘린더)
+	// 개인 일정 추가 생성자(캘린더)
 	public ScheduleDialog(JFrame frame, String title, User _u, LocalDate date) {
 		super(frame, title, true);
 		user = _u;
+		type = 0;
 		
 		initComponents();
 		
-		// 시작 년월일 자동 완성
+		// 시작 시간(년, 월, 일) 자동 완성
         startYearField.setText(String.valueOf(date.getYear())); 
         startMonthField.setText(String.valueOf(date.getMonthValue()));
         startDateField.setText(String.valueOf(date.getDayOfMonth()));
+        
+        // 종료 시간(년, 월, 일) 자동 완성
+        endYearField.setText(String.valueOf(date.getYear())); 
+        endMonthField.setText(String.valueOf(date.getMonthValue()));
+        endDateField.setText(String.valueOf(date.getDayOfMonth()));
 		
-		pack();	// 크기 자동 맞춤
-		setResizable(false);	// 크기 조정 불가
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
-		setLocationRelativeTo(null);	// 모니터 중앙 표시
 		setVisible(true);
 	}
 	
-	// 일정 수정 생성자
+	// 개인 일정 추가 생성자(시간표)
+	public ScheduleDialog(JFrame frame, String title, User _u, LocalDateTime dateTime) {
+		super(frame, title, true);
+		user = _u;
+		type = 0;
+		
+		initComponents();
+		
+		// 시작 시간(년, 월, 일, 시, 분) 자동 완성
+        startYearField.setText(String.valueOf(dateTime.getYear())); 
+        startMonthField.setText(String.valueOf(dateTime.getMonthValue()));
+        startDateField.setText(String.valueOf(dateTime.getDayOfMonth()));
+        startHourField.setText(String.valueOf(dateTime.getHour()));
+        startMinuteField.setText(String.valueOf(dateTime.getMinute()));
+        
+        // 종료 시간(년, 월, 일) 자동 완성
+        endYearField.setText(String.valueOf(dateTime.getYear())); 
+        endMonthField.setText(String.valueOf(dateTime.getMonthValue()));
+        endDateField.setText(String.valueOf(dateTime.getDayOfMonth()));
+		
+		setVisible(true);
+	}
+	
+	// 개인 일정 수정 생성자
 	public ScheduleDialog(Frame frame, String title, User _u, Schedule _s) {
 		super(frame, title, true);
 		user = _u;
 		schedule = _s;
+		type = 1;
 		
 		initComponents();
 		
-		// 시작 년월일 자동 완성
+		// 시작 시간(년, 월, 일, 시, 분) 자동 완성
         startYearField.setText(String.valueOf(schedule.getStartAt().getYear()));
         startMonthField.setText(String.valueOf(schedule.getStartAt().getMonthValue()));
         startDateField.setText(String.valueOf(schedule.getStartAt().getDayOfMonth()));
         startHourField.setText(String.valueOf(schedule.getStartAt().getHour()));
         startMinuteField.setText(String.valueOf(schedule.getStartAt().getMinute()));
         
-        // 종료 년월일 자동 완성
+        // 종료 시간(년, 월, 일, 시, 분) 자동 완성
         endYearField.setText(String.valueOf(schedule.getEndAt().getYear()));
         endMonthField.setText(String.valueOf(schedule.getEndAt().getMonthValue()));
         endDateField.setText(String.valueOf(schedule.getEndAt().getDayOfMonth()));
@@ -83,10 +109,74 @@ public class ScheduleDialog extends JDialog implements ActionListener {
         // 내용 자동 완성
         descriptionField.setText(schedule.getScheduleDescription());
         
-        pack();	// 크기 자동 맞춤
-		setResizable(false);	// 크기 조정 불가
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
-		setLocationRelativeTo(null);	// 모니터 중앙 표시
+		//setVisible(true);
+	}
+	
+	// 그룹 일정 추가 생성자(버튼)
+	public ScheduleDialog(Frame frame, String title, User _u, Group _g) {
+		super(frame, title, true);
+		user = _u;
+		group = _g;
+		type = 2;
+		
+		initComponents();
+		setVisible(true);
+	}
+	
+	// 그룹 일정 추가 생성자(시간표)
+	public ScheduleDialog(Frame frame, String title, User _u, Group _g, LocalDateTime dateTime) {
+		super(frame, title, true);
+		user = _u;
+		group = _g;
+		type = 2;
+		
+		initComponents();
+		
+		// 시작 시간(년, 월, 일, 시, 분) 자동 완성
+        startYearField.setText(String.valueOf(dateTime.getYear())); 
+        startMonthField.setText(String.valueOf(dateTime.getMonthValue()));
+        startDateField.setText(String.valueOf(dateTime.getDayOfMonth()));
+        startHourField.setText(String.valueOf(dateTime.getHour()));
+        startMinuteField.setText(String.valueOf(dateTime.getMinute()));
+        
+        // 종료 시간(년, 월, 일) 자동 완성
+        endYearField.setText(String.valueOf(dateTime.getYear())); 
+        endMonthField.setText(String.valueOf(dateTime.getMonthValue()));
+        endDateField.setText(String.valueOf(dateTime.getDayOfMonth()));
+		
+		setVisible(true);
+	}
+	
+	// 그룹 일정 수정 생성자
+	public ScheduleDialog(Frame frame, String title, User _u, Group _g, Schedule _s) {
+		super(frame, title, true);
+		user = _u;
+		group = _g;
+		schedule = _s;
+		type = 3;
+		
+		initComponents();
+		
+		// 시작 시간(년, 월, 일, 시, 분) 자동 완성
+        startYearField.setText(String.valueOf(schedule.getStartAt().getYear()));
+        startMonthField.setText(String.valueOf(schedule.getStartAt().getMonthValue()));
+        startDateField.setText(String.valueOf(schedule.getStartAt().getDayOfMonth()));
+        startHourField.setText(String.valueOf(schedule.getStartAt().getHour()));
+        startMinuteField.setText(String.valueOf(schedule.getStartAt().getMinute()));
+        
+        // 종료 시간(년, 월, 일, 시, 분) 자동 완성
+        endYearField.setText(String.valueOf(schedule.getEndAt().getYear()));
+        endMonthField.setText(String.valueOf(schedule.getEndAt().getMonthValue()));
+        endDateField.setText(String.valueOf(schedule.getEndAt().getDayOfMonth()));
+        endHourField.setText(String.valueOf(schedule.getEndAt().getHour()));
+        endMinuteField.setText(String.valueOf(schedule.getEndAt().getMinute()));
+        
+        // 구분 자동 완성
+        typeField.setText(schedule.getScheduleType());
+
+        // 내용 자동 완성
+        descriptionField.setText(schedule.getScheduleDescription());
+		
 		//setVisible(true);
 	}
 	
@@ -193,6 +283,11 @@ public class ScheduleDialog extends JDialog implements ActionListener {
         add(labelsPanel, BorderLayout.WEST);
         add(fieldsPanel, BorderLayout.EAST);
         add(bottomPanel, BorderLayout.SOUTH);
+        
+        pack();	// 크기 자동 맞춤
+		setResizable(false);	// 크기 조정 불가
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
+		setLocationRelativeTo(null);	// 모니터 중앙 표시
     }
 	
 	public void actionPerformed(ActionEvent e) {
@@ -221,11 +316,11 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		LocalDateTime endDateTime = LocalDateTime.of(endYear, endMonth, endDate, endHour, endMinute);
 		
 		// 구분 및 내용 저장
-		String type = typeField.getText().trim();
+		String type_ = typeField.getText().trim();
 		String description = descriptionField.getText().trim();
 		
 		// 입력 유효성 검사
-		if(type.equals("")) {
+		if(type_.equals("")) {
 			JOptionPane.showMessageDialog(null, "구분 입력을 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
@@ -233,12 +328,15 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 			JOptionPane.showMessageDialog(null, "내용 입력을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-
-		boolean result;
 		
-		// 일정 추가의 경우
-		if(schedule == null) {
-			Schedule newSchedule = new Schedule(user.getID(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
+		boolean result;
+		Schedule newSchedule = null;
+		
+		// 일정 추가
+		if(type == 0 || type == 2) {
+			if(type == 0) newSchedule = new Schedule(user.getID(), description, type_, startDateTime, endDateTime);	// 일정 객체 생성
+			else if(type == 2) newSchedule = new Schedule(user.getID(), group.getGroupId(), description, type_, startDateTime, endDateTime);
+			
 			result = SDAO.getInstance().insertSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 추가 성공 여부 반환
 			
 			// 일정 추가 성공
@@ -251,9 +349,11 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 				JOptionPane.showMessageDialog(null, "일정 추가 실패. 시간을 다시 확인해주세요.", "Warning", JOptionPane.WARNING_MESSAGE);
 			}
 		}
-		// 일정 수정의 경우
-		else {
-			Schedule newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), schedule.getGroupId(), description, type, startDateTime, endDateTime);	// 일정 객체 생성
+		// 일정 수정
+		else if(type == 1 || type == 3) {
+			if(type == 1) newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), description, type_, startDateTime, endDateTime);	// 일정 객체 생성
+			else if(type == 3) newSchedule = new Schedule(schedule.getScheduleId(), user.getID(), group.getGroupId(), description, type_, startDateTime, endDateTime);
+			
 			result = SDAO.getInstance().updateSchedule(newSchedule);	// 일정 객체를 인수로 DAO 객체에서 일정 수정 성공 여부 반환
 			
 			// 일정 수정 성공
