@@ -1,6 +1,7 @@
 package GUI.Dialog;
 
 import DB.User;
+import DB.Group;
 import DB.Schedule;
 import DB.SDAO;
 
@@ -27,13 +28,39 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 	TableRowSorter<DefaultTableModel> sorter;	// 테이블 행 검색(필터)
 	DefaultTableModel tableModel;
 	ArrayList<Schedule> personalSchedules = null;
+	ArrayList<Schedule> groupSchedules = null;
 	
 	User user = null;
+	Group group = null;
 	
+	int type = -1;	// 실행 타입(0: 개인 일정 조회, 1: 그룹 일정 조회)
+	
+	// 개인 일정 조회 생성자
 	public CheckScheduleDialog(JFrame frame, String title, User _u) {
 		super(frame, title, true);
 		user = _u;
+		type = 0;
 		
+		initComponent();
+		refreshPersonalScheduleTable();	// 테이블 갱신
+		
+		setVisible(true);
+	}
+	
+	// 그룹 일정 조회 생성자
+	public CheckScheduleDialog(JFrame frame, String title, User _u, Group _g) {
+		super(frame, title, true);
+		user = _u;
+		group = _g;
+		type = 1;
+		
+		initComponent();
+		refreshGroupScheduleTable();
+		
+		setVisible(true);
+	}
+	
+	private void initComponent() {
 		String option[] = {"구분", "내용"};
 		optionComboBox = new JComboBox<>(option);
 		optionComboBox.setBackground(Color.WHITE);
@@ -99,16 +126,14 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		tableModel.addColumn("시작");
 		tableModel.addColumn("종료");
 		
-		refreshScheduleTable();	// 테이블 갱신
-		
 		// 테이블 설정
 		scheduleTable = new JTable(tableModel);
 		scheduleTable.setRowHeight(20);	// 행 높이 설정
 		scheduleTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);	// 테이블 자동 크기 조절 끄기
-		scheduleTable.getColumnModel().getColumn(0).setPreferredWidth(60);	// 첫 번째 열 너비 설정
-		scheduleTable.getColumnModel().getColumn(1).setPreferredWidth(135);	// 두 번째 열 너비 설정
-		scheduleTable.getColumnModel().getColumn(2).setPreferredWidth(180);	// 세 번째 열 너비 설정
-		scheduleTable.getColumnModel().getColumn(3).setPreferredWidth(180);	// 네 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(0).setPreferredWidth(90);	// 첫 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(1).setPreferredWidth(145);	// 두 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(2).setPreferredWidth(170);	// 세 번째 열 너비 설정
+		scheduleTable.getColumnModel().getColumn(3).setPreferredWidth(170);	// 네 번째 열 너비 설정
 		
 		scheduleTable.getTableHeader().setReorderingAllowed(false);	// 열 순서 변경 금지 처리
 		scheduleTable.getTableHeader().setResizingAllowed(false);	// 열 너비 변경 금지 처리
@@ -118,7 +143,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		
 		// 스크롤 패널 등록
 		JScrollPane scheduleScroll = new JScrollPane(scheduleTable);
-		scheduleScroll.setPreferredSize(new Dimension(560, 250));
+		scheduleScroll.setPreferredSize(new Dimension(600, 250));
 		
 		// 버튼 패널
 		editButton = new JButton("수정");
@@ -165,7 +190,6 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		setResizable(false);	// 크기 조정
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);	// 종료 시 처리
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
-		setVisible(true);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -182,13 +206,24 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 			// 선택된 행이 있다면
 			if(selectedIndex != -1) {
 				int selectedModelIndex = scheduleTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
-				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
+				//Window mainFrame = SwingUtilities.getWindowAncestor(this);
 				
-				Window mainFrame = SwingUtilities.getWindowAncestor(this);
-				ScheduleDialog scheduleDialog = new ScheduleDialog((JFrame)mainFrame, "일정 수정", user, selectedSchedule);
-				scheduleDialog.setVisible(true);	// Modal이 설정되어 있으므로 Dialog dispose()시까지 스레드 대기
-				
-				refreshScheduleTable();	// 테이블 갱신
+				if(type == 0) {
+					Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
+					
+					ScheduleDialog scheduleDialog = new ScheduleDialog(null, "개인 일정 수정", user, selectedSchedule);
+					scheduleDialog.setVisible(true);	// Modal이 설정되어 있으므로 Dialog dispose()시까지 스레드 대기
+					
+					refreshPersonalScheduleTable();	// 테이블 갱신
+				}
+				else if(type == 1) {
+					Schedule selectedSchedule = groupSchedules.get(selectedModelIndex);
+					
+					ScheduleDialog scheduleDialog = new ScheduleDialog(null, "그룹 일정 수정", user, group, selectedSchedule);
+					scheduleDialog.setVisible(true);	// Modal이 설정되어 있으므로 Dialog dispose()시까지 스레드 대기
+					
+					refreshGroupScheduleTable();
+				}
 			}
 			// 선택된 행이 없다면
 			else {
@@ -202,18 +237,23 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 			// 선택된 행이 있다면
 			if(selectedIndex != -1) {
 				int selectedModelIndex = scheduleTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
-				Schedule selectedSchedule = personalSchedules.get(selectedModelIndex);
 				
 				// 삭제 여부 재확인
 				int var = JOptionPane.showConfirmDialog(null, "정말 삭제하시겠습니까?", "삭제", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 				
 				if(var == JOptionPane.YES_OPTION) {
+					Schedule selectedSchedule = null;
+					
+					if(type == 0) selectedSchedule = personalSchedules.get(selectedModelIndex);
+					else if(type == 1) selectedSchedule = groupSchedules.get(selectedModelIndex);
+					
 					boolean result = SDAO.getInstance().deleteSchedule(selectedSchedule.getScheduleId());	// 일정 아이디를 인수로 DAO 객체에서 일정 삭제 여부 반환
 					
 					// 삭제 성공
 					if(result) {
 						JOptionPane.showMessageDialog(null, "일정 삭제 성공", "Information", JOptionPane.PLAIN_MESSAGE);
-						refreshScheduleTable();	// 테이블 갱신
+						if(type == 0) refreshPersonalScheduleTable();	// 테이블 갱신
+						else if(type == 1) refreshGroupScheduleTable();
 					}
 					// 삭제 실패
 					else {
@@ -228,7 +268,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 	}
 	
-	public void search() {
+	private void search() {
 		ArrayList<RowFilter<Object, Object>> filters = new ArrayList<>();
 		
 		// 검색 옵션 설정
@@ -278,7 +318,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 	}
 	
-	public void refreshScheduleTable() {
+	public void refreshPersonalScheduleTable() {
 		tableModel.setRowCount(0);	// 테이블 모델 초기화
 		
 		personalSchedules = SDAO.getInstance().getSchedules(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 일정 ArrayList 반환 
@@ -299,6 +339,32 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 			data[1] = personalSchedules.get(i).getScheduleDescription();
 			data[2] = personalSchedules.get(i).getStartAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
 			data[3] = personalSchedules.get(i).getEndAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			
+			tableModel.addRow(data);
+		}
+	}
+	
+	public void refreshGroupScheduleTable() {
+		tableModel.setRowCount(0);	// 테이블 모델 초기화
+		
+		groupSchedules = SDAO.getInstance().getGroupSchedules(group.getGroupId());
+		
+		// DB에서 전달받은 ArrayList를 시작 시간을 기준으로 하여 정렬
+		Collections.sort(groupSchedules, new Comparator<Schedule>() {
+			@Override
+			public int compare(Schedule s1, Schedule s2) {
+				return s1.getStartAt().compareTo(s2.getStartAt());
+			}
+		});
+		
+		// 정렬한 ArrayList를 테이블 모델에 추가
+		for(int i = 0; i < groupSchedules.size(); i++) {
+			Object[] data = new Object[4];
+			
+			data[0] = groupSchedules.get(i).getScheduleType();
+			data[1] = groupSchedules.get(i).getScheduleDescription();
+			data[2] = groupSchedules.get(i).getStartAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
+			data[3] = groupSchedules.get(i).getEndAt().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분"));
 			
 			tableModel.addRow(data);
 		}
