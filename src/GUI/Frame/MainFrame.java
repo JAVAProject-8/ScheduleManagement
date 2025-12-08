@@ -17,7 +17,7 @@ public class MainFrame extends JFrame implements ActionListener {
 	
 	// JTabbedPane에 추가될 패널을 필드로 선언 필요
 	MainPanel mainPanel = null;
-	TimetablePanel timeTablePanel = null;
+	TimetablePanel timetablePanel = null;
 	CalendarPanel calendarPanel = null;
 	GroupMainPanel groupMainPanel = null;
 	GroupTimetablePanel groupTimetablePanel = null;
@@ -68,13 +68,13 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		// 패널 생성
 		mainPanel = new MainPanel(user);
-		timeTablePanel = new TimetablePanel(user);
+		timetablePanel = new TimetablePanel(user);
 		calendarPanel = new CalendarPanel(user);
 		groupMainPanel = new GroupMainPanel(user);
 		groupTimetablePanel = new GroupTimetablePanel(user);
 		
 		tabbedPane.addTab("메인", mainPanel);
-		tabbedPane.addTab("시간표", timeTablePanel);
+		tabbedPane.addTab("시간표", timetablePanel);
 		tabbedPane.addTab("캘린더", calendarPanel);
 		tabbedPane.addTab("그룹 메인", groupMainPanel);
 		tabbedPane.addTab("그룹 시간표", groupTimetablePanel);
@@ -105,9 +105,13 @@ public class MainFrame extends JFrame implements ActionListener {
 		
 		if(command.equals("일정 추가")) {
 			new ScheduleDialog(this, "일정 추가", user);
+			timetablePanel.loadScheduleData();
+			groupTimetablePanel.loadSchedulesForGroup();
 		}
 		else if(command.equals("전체 일정 조회")) {
 			new CheckScheduleDialog(this, "전체 일정 조회", user);
+			timetablePanel.loadScheduleData();
+			groupTimetablePanel.loadSchedulesForGroup();
 		}
 		else if(command.equals("그룹 생성")) {
 			String groupId = JOptionPane.showInputDialog(null, "그룹 아이디를 입력해주세요.", "그룹 생성", JOptionPane.QUESTION_MESSAGE);
