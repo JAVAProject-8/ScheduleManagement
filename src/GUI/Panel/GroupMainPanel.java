@@ -12,21 +12,21 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.format.DateTimeFormatter;
-
 import javax.swing.border.EmptyBorder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class GroupMainPanel extends JPanel implements ActionListener {
 	JComboBox<String> groupComboBox;	// 그룹 선택을 위한 콤보박스
 	DefaultComboBoxModel<String> comboBoxModel;
 	JTextArea memoArea;			// 메모 출력
 	JTextField memoField;		// 메모 입력
-	JButton inputButton, updateTaskButton;	// 메모 입력, 업무 입력 버튼
-	JLabel groupInviteCodeLabel;
+	JButton inputButton, updateTaskButton, checkButton, addButton;	// 메모 입력, 업무 입력, 일정 조회, 일정 추가 버튼
+	JLabel groupInviteCodeLabel;	// 초대 코드 라벨
 	JTable groupMemberTable;	// 그룹원 테이블
 	DefaultTableModel tableModel;	// 테이블에 삽입할 기본 모델
 	
@@ -61,6 +61,14 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		updateTaskButton.setBackground(Color.WHITE);
 		updateTaskButton.setFocusPainted(false);
 		
+		checkButton = new JButton("일정 조회");
+		checkButton.setBackground(Color.WHITE);
+		checkButton.setFocusPainted(false);
+		
+		addButton = new JButton("일정 추가");
+		addButton.setBackground(Color.WHITE);
+		addButton.setFocusPainted(false);
+		
 		// 상단 좌측 패널
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -70,6 +78,8 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		// 상단 우측 패널
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		rightPanel.add(checkButton);
+		rightPanel.add(addButton);
 		rightPanel.add(updateTaskButton);
 		
 		// 상단 패널
@@ -156,6 +166,8 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		groupComboBox.addActionListener(this);
 		memoField.addActionListener(this);
 		inputButton.addActionListener(this);
+		checkButton.addActionListener(this);
+		addButton.addActionListener(this);
 		updateTaskButton.addActionListener(this);
 	}
 	
@@ -199,6 +211,33 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 			}
 			
 			memoField.setText("");	// 입력 필드 초기화
+		}
+		// 그룹 일정 조회 시
+		else if(obj == checkButton) {
+			new CheckScheduleDialog(null, "그룹 일정 조회", user, selectedGroup);
+		}
+		// 그룹 일정 추가 시
+		else if(obj == addButton) {
+			// 팀장 권한을 가지고 있는지 검사
+			String currentID = user.getID();
+			boolean isPermission = false;
+			
+			// 팀장 권한 탐색
+			for(int i = 0; i < members.size(); i++) {
+				if(members.get(i).getUserId().equals(currentID)) {
+					if(members.get(i).getPosition().equals("Y")) {
+						isPermission = true;
+					}
+					break;
+				}
+			}
+			
+			if(isPermission) {
+				new ScheduleDialog(null, "그룹 일정 추가", user, selectedGroup);
+			}
+			else {
+				JOptionPane.showMessageDialog(null, "권한이 없습니다.", "Warning", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		// 진행 업무 입력 시
 		else if(obj == updateTaskButton) {
