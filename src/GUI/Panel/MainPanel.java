@@ -14,15 +14,14 @@ import DB.User;
 // 메인 패널
 // 오늘 일정, 마감 일정 표시
 public class MainPanel extends JPanel {
-    // 사용자 id
-    private User u = null;
-    private DefaultTableModel todayModel;
-    private DefaultTableModel deadlineModel;
-    private JTable todayTable; // 일정 테이블
-    private JTable deadlineTable; // 일정 테이블
-    private String[] t = { "구분", "내용", "날짜", "시간"};
+    private User u = null;                                // 사용자 객체
+    private DefaultTableModel todayModel;                // 오늘 일정 기본 테이블 모델
+    private DefaultTableModel deadlineModel;             // 마감 일정 기본 테이블 모델
+    private JTable todayTable;                           // 일정 테이블
+    private JTable deadlineTable;                        // 일정 테이블
+    private String[] t = { "구분", "내용", "날짜", "시간"};   // 공통 테이블 속성명
 
-    // 객체 생성시 사용자 id, DB를 받음
+    // 객체 생성시 사용자 객체 받음
     // 그리고 GUI 기본 설정
     public MainPanel(User u) {
         this.u = u;
@@ -40,28 +39,33 @@ public class MainPanel extends JPanel {
         top.add(label2);
         add(top, BorderLayout.NORTH);
 
+        // 테이블 초기화
         initTable();
 
         // DB에서 일정 가져와서 추가함
         loadSchedules();
     }
     
+    // 테이블 초기화
     private void initTable() {
+        // 오늘 일정 기본 테이블 모델 설장
         todayModel = new DefaultTableModel(t, 0) {
+            // 직접 편집 금지
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // 직접 편집 금지
+                return false;
             }
         };
-        
+        // 마감 일정 기본 테이블 모델 설장
         deadlineModel = new DefaultTableModel(t, 0) {
+            // 직접 편집 금지
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // 직접 편집 금지
             }
         };
 
-        // 테이블 설정
+        // 일정 테이블 생성
         todayTable = new JTable(todayModel);
         deadlineTable = new JTable(deadlineModel);
         // 테이블 열 크기
@@ -88,14 +92,11 @@ public class MainPanel extends JPanel {
         // 테이블 크기조정 불기
         todayTable.getTableHeader().setResizingAllowed(false);
         deadlineTable.getTableHeader().setResizingAllowed(false);
-
         // 중앙 영역 패널
         JPanel center = new JPanel(new GridLayout(1, 2));
-
         // 스크롤에 테스트 에리어를 추가하고 그 스크롤를 중앙 패널에 추가
         center.add(new JScrollPane(todayTable));
         center.add(new JScrollPane(deadlineTable));
-
         // 패널에 스크롤 추가
         add(center, BorderLayout.CENTER);
     }
@@ -110,7 +111,7 @@ public class MainPanel extends JPanel {
         // DB에서 마감 일정
         ArrayList<Schedule> deadlineList = scheduleList(3);
 
-        if (todayList != null) {
+        if (todayList != null) {        // 오늘 일정 리스드가 null이 아니면
             for (Schedule s : todayList) {
                 todayModel.addRow(
                     new Object[] { 
@@ -122,8 +123,8 @@ public class MainPanel extends JPanel {
                 );
             }
         }
-
-        if (deadlineList != null) {
+        
+        if (deadlineList != null) {         // 마감 일정 리스드가 null이 아니면
             for (Schedule s : deadlineList) {
                 deadlineModel.addRow(
                     new Object[] { 
@@ -153,7 +154,6 @@ public class MainPanel extends JPanel {
         }
         
         // 특정 시간 기준으로 오름차순 정렬
-        
         res.sort(Comparator.comparing(Schedule::getStartAt));
         return res;
     }
@@ -183,7 +183,7 @@ public class MainPanel extends JPanel {
                 res.add(s);
             }
         }
-
+        // 특정 종료 기준으로 오름차순 정렬
         res.sort(Comparator.comparing(Schedule::getEndAt).thenComparing(Schedule::getEndAt));
 
         return res;
