@@ -122,7 +122,17 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		tableModel.addColumn("업무");
 		
 		// 테이블 설정
-		groupMemberTable = new JTable(tableModel);
+		groupMemberTable = new JTable(tableModel) {
+			@Override
+			public String getToolTipText(MouseEvent e) {
+				Point p = e.getPoint();
+				
+				int row = rowAtPoint(p);
+				int col = columnAtPoint(p);
+				
+				return getValueAt(row, col).toString();
+			}
+		};
 		groupMemberTable.setRowHeight(20);	// 행 높이 설정
 		groupMemberTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);	// 테이블 자동 크기 조절 끄기
 		groupMemberTable.getColumnModel().getColumn(0).setPreferredWidth(60);	// 첫 번째 열 너비 설정
@@ -130,31 +140,21 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		groupMemberTable.getTableHeader().setReorderingAllowed(false);	// 열 순서 변경 금지 처리
 		groupMemberTable.getTableHeader().setResizingAllowed(false);	// 열 너비 변경 금지 처리
 		
-		groupMemberTable.addMouseListener(new MouseListener() {
+		groupMemberTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int selectedIndex = groupMemberTable.getSelectedRow();	// 선택한 행의 인덱스를 가져옴
-				
-				int selectedModelIndex = groupMemberTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
-				Member selectedMember = members.get(selectedModelIndex);
-				User selectedUser = SDAO.getInstance().getUserInfo(selectedMember.getUserId());
-				
-				// 특정 행 더블 클릭 시 그룹원 상세 정보 출력
-				Window mainFrame = SwingUtilities.getWindowAncestor(groupMemberTable);
-				new GroupMemberInfoDialog((JFrame)mainFrame, "상세 정보", selectedUser, selectedMember);
+				if(e.getClickCount() == 2) {
+					int selectedIndex = groupMemberTable.getSelectedRow();	// 선택한 행의 인덱스를 가져옴
+					
+					int selectedModelIndex = groupMemberTable.convertRowIndexToModel(selectedIndex);	// 테이블 모델의 인덱스로 변환
+					Member selectedMember = members.get(selectedModelIndex);
+					User selectedUser = SDAO.getInstance().getUserInfo(selectedMember.getUserId());
+					
+					// 특정 행 더블 클릭 시 그룹원 상세 정보 출력
+					Window mainFrame = SwingUtilities.getWindowAncestor(groupMemberTable);
+					new GroupMemberInfoDialog((JFrame)mainFrame, "상세 정보", selectedUser, selectedMember);
+				}	
 			}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {}
-			
-			@Override
-			public void mouseReleased(MouseEvent e) {}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {}
 		});
 		
 		// 우측 패널
