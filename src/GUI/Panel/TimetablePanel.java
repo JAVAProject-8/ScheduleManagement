@@ -20,25 +20,24 @@ import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 
 public class TimetablePanel extends JPanel {
-    private JTable table;
-    private DefaultTableModel model;
-    private User u = null;
-    // 요일
+    private JTable table;            // 개인 일장 테이블
+    private DefaultTableModel model; // 개인 일장 기본 테이블 모델
+    private User u = null;           // 사용자 객체
+    // 테이블 속성명
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
-    // 시간
-    private final int START_HOUR = 9;
-    private final int END_HOUR = 23;
+    private final int START_HOUR = 9; // 시작 시간
+    private final int END_HOUR = 23;  // 종료 시간
     
     // 패널 초기화
     public TimetablePanel(User u) {
         this.u = u;
         setLayout(new BorderLayout());
         
-        initTable();
+        initTable();        // 테이블 초기화
         loadScheduleData(); // Mock DAO 호출
     }
 
-    /** 테이블 초기화 */
+    // 테이블 초기화
     private void initTable() {
         int rows = END_HOUR - START_HOUR + 1;
 
@@ -49,6 +48,7 @@ public class TimetablePanel extends JPanel {
             }
         };
 
+        // 테이블 객체 생성
         table = new JTable(model);
         
         // 시간 표시(0열)
@@ -79,6 +79,7 @@ public class TimetablePanel extends JPanel {
         table.getTableHeader().setReorderingAllowed(false);
         // 테이블 크기조정 불기
         table.getTableHeader().setResizingAllowed(false);
+        // 테이블 마우스 클릭 이벤드
         table.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseClicked(MouseEvent e) {
@@ -117,7 +118,7 @@ public class TimetablePanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    /** DAO 데이터 로드 */
+    // DAO 데이터 로드
     public void loadScheduleData() {
     	clearTable();
     	
@@ -145,9 +146,8 @@ public class TimetablePanel extends JPanel {
         return !(date.isBefore(firstDayOfWeek) || date.isAfter(lastDayOfWeek));
     }
 
-    /** 일정 1개를 시간표 테이블에 삽입 */
+    // 일정 1개를 시간표 테이블에 추가
     private void addScheduleToTable(Schedule schedule) {
-        //System.out.println(schedule.getScheduleId() + ", " + schedule.getScheduleDescription() + ", " + schedule.getStartAt().toLocalDate() + ", " + schedule.getStartAt());
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
         
@@ -160,12 +160,9 @@ public class TimetablePanel extends JPanel {
         }
         
         // 범위 벗어나면 무시
-        if (col < 1 || col > 7)
-            return;
-        if (startRow < 0 || startRow >= model.getRowCount())
-            return;
-        if (endRow < 0)
-            endRow = startRow;
+        if (col < 1 || col > 7) return;
+        if (startRow < 0 || startRow >= model.getRowCount()) return;
+        if (endRow < 0) endRow = startRow;
 
         // 일정 시간 블록 채우기
         for (int row = startRow; row <= endRow; row++) {
@@ -173,7 +170,7 @@ public class TimetablePanel extends JPanel {
         }
     }
     
-    /** 시간표 초기화 */
+    // 시간표 초기화
     private void clearTable() {
         for (int row = 0; row < (END_HOUR - START_HOUR + 1); row++) {
             for (int col = 1; col <= 7; col++) {
@@ -188,7 +185,7 @@ public class TimetablePanel extends JPanel {
         return dow.getValue();
     }
 
-    // 일정 색상 렌더러
+    // 테이블에 일정 색상 렌더러
     private class ScheduleCellRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -215,8 +212,7 @@ public class TimetablePanel extends JPanel {
         }
     }
 
-    /** 일정 내용 기반 해시 색상 생성 */
-    // 렌덤으로 0 ~ 255 
+    // 사용자 ID으로 해시 색상 생성
     private Color getColorForSchedule(String str) {
         int hash = Math.abs(str.hashCode());
         int r = Math.abs((hash * 37) % 200 + 30);

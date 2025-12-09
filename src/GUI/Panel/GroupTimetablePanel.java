@@ -17,25 +17,27 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 public class GroupTimetablePanel extends JPanel implements ActionListener {
-    private JComboBox<String> groupComboBox;
-    private DefaultComboBoxModel<String> comboBoxModel;
-    private JTable table;
-    private DefaultTableModel model;
-    private User u = null;
-    // 요일
+    private JComboBox<String> groupComboBox;                // 콤보박스
+    private DefaultComboBoxModel<String> comboBoxModel;     // 기본 콤보박스 모델
+    private JTable table;                                   // 테이블
+    private DefaultTableModel model;                        // 기본 테이블 모델
+    private User u = null;                                  // 사용자 객체
+    // 테이블 속성명
     private final String[] DAYS = { "시간", "월", "화", "수", "목", "금", "토", "일" };
-    // 시간
-    private final int START_HOUR = 9;
-    private final int END_HOUR = 23;
+    
+    private final int START_HOUR = 9;       // 시작 시간
+    private final int END_HOUR = 23;        // 종료 시간
 
-    private JPanel topPanel;
-    private JScrollPane tableScrollPane;
+    private JPanel topPanel;                // 탑 패널
+    private JScrollPane tableScrollPane;    // 스크롤
     
+    // 사용자 별 색상
     private Map<String, Color> memberColorMap = new HashMap<>();
-    private ArrayList<Group> groups = null;
+    private ArrayList<Group> groups = null;  // 그룹들
     
-    private Group selectedGroup = null;
+    private Group selectedGroup = null;    // 그룹
     
+    // 패널 초기화
     public GroupTimetablePanel(User u) {
         setLayout(new BorderLayout());
         this.u = u;
@@ -44,6 +46,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         refreshGroupList();
     }
     
+    // 선택 콤보박스 초기화
     private void initComponent() {
     	// 상단 패널 - 그룹 선택 콤보박스
     	JLabel informationLabel = new JLabel("그룹 선택: ");
@@ -64,6 +67,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         groupComboBox.addActionListener(this);
     }
     
+    // 그룹 목록 새로 고침
     public void refreshGroupList() {
     	groups = SDAO.getInstance().getMyGroups(u.getID());	// 사용자 아이디를 인수로 DAO 객체에서 그룹 ArrayList 반환
 		
@@ -73,6 +77,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 		if(groups.size() == 0) {	// 사용자가 가입되어있는 그룹이 없는 경우
 			JLabel impormationLabel = new JLabel("초대 코드를 입력하여 그룹에 가입해주세요.", JLabel.CENTER);
 			impormationLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
+            // 라벨 추가
 			add(impormationLabel, BorderLayout.CENTER);
 			selectedGroup = null;
 			
@@ -81,8 +86,8 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 			
 			return;
 		}
-		
-		add(topPanel, BorderLayout.NORTH);
+
+		add(topPanel, BorderLayout.NORTH);          // 콤보박스 상단 패널 추가
         add(tableScrollPane, BorderLayout.CENTER);	// 패널에 테이블 추가
 		
         groupComboBox.removeActionListener(this);
@@ -99,13 +104,13 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 		this.repaint();		// 재배치
     }
     
+    // 액션 이벤트
     @Override
     public void actionPerformed(ActionEvent e) {
     	int selectedIndex = groupComboBox.getSelectedIndex();
     	
     	if(selectedIndex != -1) {
 	    	selectedGroup = groups.get(selectedIndex);
-            //System.out.println("선택 : " + selectedGroup.getGroupId());
 	    	loadSchedulesForGroup();
     	}
     }
@@ -151,6 +156,8 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         table.getTableHeader().setReorderingAllowed(false);
         // 테이블 크기조정 불기
         table.getTableHeader().setResizingAllowed(false);
+
+        // 테이블 마우스 클릭 이벤드
         table.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseClicked(MouseEvent e) {
@@ -191,15 +198,14 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         tableScrollPane = new JScrollPane(table);
     }
 
-    /** DAO로 그룹 목록 가져오기 */
+    // DAO로 그룹 목록 가져오기
     private void loadGroupList() {
         for (Group g : groups) {
-            //groupComboBox.addItem(g.getGroupName());
         	comboBoxModel.addElement(g.getGroupName());
         }
     }
 
-    /** 특정 그룹의 전체 일정 로드 */
+    // 특정 그룹의 전체 일정 로드
     public void loadSchedulesForGroup() {
         // 테이블의 기존 일정을 모두 초기화함
         clearTable();
@@ -218,37 +224,19 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         
         // 조회된 그룹원 각각의 일정 조회
         for (Member m : members) {
-            // System.out.println(m.getUserId());
             // 해당 유저가 선택된 그룹에서 작성한 일정만 조회
-            //ArrayList<Schedule> schedules = SDAO.getInstance().getSchedulesByUserAndGroup(m.getUserId(), selectedGroup.getGroupId());
             ArrayList<Schedule> schedules = SDAO.getInstance().getSchedules(m.getUserId());
 
-            //System.out.println(" member=" + m.getUserId() + ", schedules=" + (schedules == null ? 0 : schedules.size()));
-            
             // 조회된 일정들을 테이블에 배치
             for (Schedule s : schedules) {
-                // addScheduleToTable(s);
-                
                 // 이번 주에 포함되는 일정인지 필터링
                 if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) {
-                    // System.out.println(" Adding schedule: " + s + " groupID= " + s.getGroupId() + " uid= " + s.getWriterId() + " start=" + s.getStartAt());
                     // 필터 통과한 일정을 테이블에 실제 배치
                     addScheduleToTable(s);
                 }
-                // 이번 주 일정이 아닌 경우 로그 출력
-                //else System.out.println(s.getScheduleId() + ", " + s.getWriterId() + "는 요번주에 포함 하지 않음");
             }
-
         }
-        /* 
-        ArrayList<Schedule> schedules = SDAO.getInstance().getGroupSchedules(selectedGroup.getGroupId());
 
-        // 테이블 배치
-        for (Schedule s : schedules) {
-            if (isDateInCurrentWeek(s.getStartAt().toLocalDate())) addScheduleToTable(s);
-        } 
-        */
-        
         // UI 강제 갱신
         table.repaint();
     }
@@ -270,12 +258,10 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         return !(date.isBefore(firstDayOfWeek) || date.isAfter(lastDayOfWeek));
     }
 
-    /** 일정 1개를 시간표 테이블에 삽입 */
+    // 일정 1개를 시간표 테이블에 추가
     private void addScheduleToTable(Schedule schedule) {
         LocalDateTime start = schedule.getStartAt();
         LocalDateTime end = schedule.getEndAt();
-
-        //System.out.println("add : " + schedule.getScheduleId());
 
         int col = dayOfWeekToColumn(start.getDayOfWeek());
         int startRow = start.getHour() - START_HOUR;
@@ -286,12 +272,9 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         }
         
         // 범위 벗어나면 무시
-        if (col < 1 || col > 7)
-            return;
-        if (startRow < 0 || startRow >= model.getRowCount())
-            return;
-        if (endRow < 0)
-            endRow = startRow;
+        if (col < 1 || col > 7) return;
+        if (startRow < 0 || startRow >= model.getRowCount()) return;
+        if (endRow < 0) endRow = startRow;
 
         // 일정 시간 블록 채우기
         for (int row = startRow; row <= endRow; row++) {
@@ -299,7 +282,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         }
     }
 
-    /** 시간표 초기화 */
+    // 시간표 초기화 
     private void clearTable() {
         for (int row = 0; row < (END_HOUR - START_HOUR + 1); row++) {
             for (int col = 1; col <= 7; col++) {
@@ -314,7 +297,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         return dow.getValue();
     }
 
-    // 일정 색상 렌더러
+    // 테이블에 일정 색상 렌더러
     private class GroupScheduleRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -350,14 +333,14 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         }
     }
 
-    /** 일정 ID 기반 해시 색상 생성 */
-    // 렌덤으로 0 ~ 255
-    private Color getColorForSchedule(String id) {
-        if (memberColorMap.containsKey(id)) {
-            return memberColorMap.get(id);
+    // 사용자 ID으로 해시 색상 생성
+    private Color getColorForSchedule(String str) {
+        // memberColorMap에 색상이 있을 떄
+        if (memberColorMap.containsKey(str)) {
+            return memberColorMap.get(str);
         }
 
-        int hash = Math.abs(id.hashCode());
+        int hash = Math.abs(str.hashCode());
         int r = Math.abs((hash * 37) % 200 + 30);
         int g = Math.abs((hash * 67) % 200 + 30);
         int b = Math.abs((hash * 97) % 200 + 30);
