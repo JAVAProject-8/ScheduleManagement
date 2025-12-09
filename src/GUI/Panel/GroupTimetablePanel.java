@@ -12,7 +12,9 @@ import DB.Member;
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.border.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
@@ -112,6 +114,13 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
 
     // 테이블 초기화
     private void initTable() {
+    	LocalDate today = LocalDate.now();	// 현재 날짜
+		LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
+		
+		for(int i = 1; i < 8; i++) {
+    		DAYS[i] += mondayDate.plusDays(i - 1).format(DateTimeFormatter.ofPattern("(MM/dd)"));
+    	}
+		
         int rows = END_HOUR - START_HOUR + 1;
 
         model = new DefaultTableModel(DAYS, rows) {
@@ -173,9 +182,6 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         				}
         			}
         			else {
-        				LocalDate today = LocalDate.now();	// 현재 날짜
-            			LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
-            			
             			LocalDate selectedDate = mondayDate.plusDays(col - 1);			// 선택일 계산
             			LocalTime selectedTime = LocalTime.of(START_HOUR + row, 30);	// 선택 시간 계산
             			LocalDateTime selectedDateTime = LocalDateTime.of(selectedDate, selectedTime);
@@ -189,6 +195,7 @@ public class GroupTimetablePanel extends JPanel implements ActionListener {
         });
         
         tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setBorder(new TitledBorder("그룹 시간표"));
     }
 
     /** DAO로 그룹 목록 가져오기 */

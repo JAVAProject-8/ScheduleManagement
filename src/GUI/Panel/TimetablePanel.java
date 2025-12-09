@@ -3,6 +3,7 @@ package GUI.Panel;
 import GUI.Dialog.*;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -17,6 +18,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 
 public class TimetablePanel extends JPanel {
@@ -40,6 +42,13 @@ public class TimetablePanel extends JPanel {
 
     /** 테이블 초기화 */
     private void initTable() {
+    	LocalDate today = LocalDate.now();	// 현재 날짜
+    	LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
+    	
+    	for(int i = 1; i < 8; i++) {
+    		DAYS[i] += mondayDate.plusDays(i - 1).format(DateTimeFormatter.ofPattern("(MM/dd)"));
+    	}
+    	
         int rows = END_HOUR - START_HOUR + 1;
 
         model = new DefaultTableModel(DAYS, rows) {
@@ -99,9 +108,6 @@ public class TimetablePanel extends JPanel {
         				scheduleDialog.setVisible(true);
         			}
         			else {
-        				LocalDate today = LocalDate.now();	// 현재 날짜
-            			LocalDate mondayDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));	// 이전 날짜 중 가장 가까운 월요일을 탐색
-            			
             			LocalDate selectedDate = mondayDate.plusDays(col - 1);			// 선택일 계산
             			LocalTime selectedTime = LocalTime.of(START_HOUR + row, 30);	// 선택 시간 계산
             			LocalDateTime selectedDateTime = LocalDateTime.of(selectedDate, selectedTime);
@@ -113,8 +119,10 @@ public class TimetablePanel extends JPanel {
         		}
         	}
         });
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        tableScrollPane.setBorder(new TitledBorder("개인 시간표"));
         // 패널에 테이블 추가
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        add(tableScrollPane, BorderLayout.CENTER);
     }
 
     /** DAO 데이터 로드 */
