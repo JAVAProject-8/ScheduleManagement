@@ -591,49 +591,6 @@ public class SDAO {
         }
         return list;
     }
-    
-    
-    // 기능: 특정 유저의 일정 중 지정된 그룹에 속하는 일정만 조회한다.
-    // 매개변수: userId : 조회할 유저 ID, groupId : 조회 대상 그룹 ID
-    // 반환값: 해당 유저가 작성한 일정 중 groupId에 해당하는 Schedule 리스트
-    // 필요한 이유
-    // getSchedules(userId)는 유저가 작성한 모든 일정을 반환하여
-    // 그룹 구분 없이 전체 일정이 섞여 조회되는 문제가 발생한다.
-    // 그룹 화면에서는 "해당 그룹에 속한 일정만" 정확히 보여줘야 하므로
-    // userId + groupId 조건으로 필터링된 일정 조회 메소드가 필요하다.
-    public ArrayList<Schedule> getSchedulesByUserAndGroup(String userId, String groupId) {
-        ArrayList<Schedule> list = new ArrayList<>();
-
-        String sql = "SELECT schedule_id, writer_id, group_id, schedule_description, schedule_type, start_at, end_at "
-                + "FROM schedules "
-                + "WHERE writer_id = ? "
-                + "AND group_id = ? "
-                + "ORDER BY start_at ASC";
-
-        try (Connection conn = DBC.connect();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, userId);
-            pstmt.setString(2, groupId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new Schedule(
-                            rs.getInt("schedule_id"),
-                            rs.getString("writer_id"),
-                            rs.getString("group_id"),
-                            rs.getString("schedule_description"),
-                            rs.getString("schedule_type"),
-                            rs.getTimestamp("start_at").toLocalDateTime(),
-                            rs.getTimestamp("end_at").toLocalDateTime()));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
-    }
 
     // 기능: 그룹 일정 조회
     // 매개변수: 유저ID
