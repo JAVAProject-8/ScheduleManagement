@@ -15,13 +15,14 @@ import java.util.ArrayList;
 public class MainFrame extends JFrame implements ActionListener {
 	public User user = null;
 	
-	// JTabbedPane에 추가될 패널을 필드로 선언 필요
+	// JTabbedPane에 추가될 패널을 필드로 선언
 	MainPanel mainPanel = null;
 	TimetablePanel timetablePanel = null;
 	CalendarPanel calendarPanel = null;
 	GroupMainPanel groupMainPanel = null;
 	GroupTimetablePanel groupTimetablePanel = null;
 	
+	// 생성자
 	public MainFrame(User _u) {
 		Container ct = getContentPane();
 		user = _u;	// 현재 로그인 한 사용자를 식별하기 위한 객체 저장
@@ -99,6 +100,7 @@ public class MainFrame extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 	
+	// ActionListener 메소드 구현
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();

@@ -180,7 +180,7 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		//setVisible(true);
 	}
 	
-	// UI 초기화
+	// 컴포넌트 배치 메소드
     private void initComponents() {
         setLayout(new BorderLayout(5, 5));
 
@@ -290,6 +290,8 @@ public class ScheduleDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
     }
 	
+    // ActionListener 메소드 구현
+    @Override
 	public void actionPerformed(ActionEvent e) {
 		// 입력 유효성 검사	
 		int startYear, startMonth, startDate, startHour, startMinute, endYear, endMonth, endDate, endHour, endMinute;

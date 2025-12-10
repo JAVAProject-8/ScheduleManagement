@@ -86,6 +86,8 @@ public class LoginFrame extends JFrame implements ActionListener {
 		setVisible(true);	// 활성화
 	}
 	
+	// ActionListener 구현
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		

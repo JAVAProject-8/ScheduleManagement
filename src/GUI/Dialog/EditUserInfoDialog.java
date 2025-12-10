@@ -212,6 +212,8 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 		setVisible(true);
 	}
 	
+	// ActionListener 메소드 구현
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		
@@ -280,7 +282,7 @@ public class EditUserInfoDialog extends JDialog implements ActionListener {
 	}
 	
 	// 기본값 설정 메소드
-	public void setDefaultValue() {
+	private void setDefaultValue() {
 		// 수정 불가능 항목 기본 정보 설정
 		IDField.setEditable(false);
 		IDField.setBackground(Color.WHITE);

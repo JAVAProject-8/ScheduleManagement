@@ -19,6 +19,7 @@ public class GroupMemberInfoDialog extends JDialog {
 	User user = null;
 	Member member = null;
 	
+	// 생성자
 	public GroupMemberInfoDialog(JFrame frame, String title, User _u, Member _m) {
 		super(frame, title, true);
 		user = _u;
@@ -26,6 +27,7 @@ public class GroupMemberInfoDialog extends JDialog {
 		
 		setLayout(new BorderLayout());
 		
+		// 좌측 라벨 패널
 		JPanel labelsPanel = new JPanel();
 		labelsPanel.setLayout(new GridLayout(7, 1, 0, 5));
 		labelsPanel.add(new JLabel("이름", JLabel.RIGHT));
@@ -37,6 +39,7 @@ public class GroupMemberInfoDialog extends JDialog {
 		labelsPanel.add(new JLabel("이메일", JLabel.RIGHT));
 		labelsPanel.setBorder(new EmptyBorder(10, 20, 10, 10));
 		
+		// 우측 필드 패널
 		nameField = new JTextField(15);
 		nameField.setEditable(false);
 		nameField.setBackground(Color.WHITE);
@@ -104,7 +107,8 @@ public class GroupMemberInfoDialog extends JDialog {
 		setVisible(true);
 	}
 	
-	public void setUserInfo() {
+	// 사용자 정보 설정 메소드
+	private void setUserInfo() {
 		nameField.setText(user.getName());
 		idField.setText(user.getID());
 		String position = member.getPosition();

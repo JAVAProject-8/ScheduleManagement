@@ -32,13 +32,14 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 	
 	JPanel topPanel, memoPanel, groupMemberPanel;
 	
-	ArrayList<Group> groups = null;
-	ArrayList<Member> members = null;
-	ArrayList<Memo> memos = null;
+	ArrayList<Group> groups = null;		// 사용자가 가입된 그룹을 저장하기 위한 ArrayList
+	ArrayList<Member> members = null;	// 선택한 그룹의 멤버를 저장하기 위한 ArrayList
+	ArrayList<Memo> memos = null;		// 선택한 그룹의 메모를 저장하기 위한 ArrayList
 	
 	User user = null;
-	Group selectedGroup = null;
+	Group selectedGroup = null;	// 사용자가 선택한 그룹
 	
+	// 생성자
 	public GroupMainPanel(User _u) {
 		setLayout(new BorderLayout());
 		user = _u;
@@ -163,6 +164,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		groupMemberPanel.add(new JScrollPane(groupMemberTable), BorderLayout.CENTER);
 		groupMemberPanel.setBorder(new EmptyBorder(0, 10, 20, 20));
 		
+		// ActionListener 등록
 		groupComboBox.addActionListener(this);
 		memoField.addActionListener(this);
 		inputButton.addActionListener(this);
@@ -171,6 +173,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		updateTaskButton.addActionListener(this);
 	}
 	
+	// ActionListener 메소드 구현
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
@@ -260,6 +263,7 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		}
 	}
 	
+	// 그룹 리스트 새로고침 메소드
 	public void refreshGroupList() {
 		groups = SDAO.getInstance().getMyGroups(user.getID());	// 사용자 아이디를 인수로 DAO 객체에서 그룹 ArrayList 반환
 		
@@ -302,13 +306,13 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		this.repaint();		// 재배치
 	}
 	
-	// 그룹 정보 설정
-	public void setGroupInfo() {
+	// 그룹 정보(초대코드) 설정 메소드
+	private void setGroupInfo() {
 		groupInviteCodeLabel.setText("\t초대 코드: " + selectedGroup.getInviteCode());
 	}
 	
-	// 그룹 메모 설정
-	public void setGroupMemo() {
+	// 그룹 메모 설정 메소드
+	private void setGroupMemo() {
 		memoArea.setText("");
 		
 		memos = SDAO.getInstance().getMemosByGroupId(selectedGroup.getGroupId());
@@ -332,8 +336,8 @@ public class GroupMainPanel extends JPanel implements ActionListener {
 		}
 	}
 	
-	// 그룹 업무 설정
-	public void setGroupTask() {
+	// 그룹 업무 설정 메소드
+	private void setGroupTask() {
 		members = SDAO.getInstance().getMembersByGroupId(selectedGroup.getGroupId());
 		tableModel.setRowCount(0);
 		

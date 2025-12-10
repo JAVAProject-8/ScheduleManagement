@@ -22,7 +22,8 @@ public class RegisterFrame extends JFrame implements ActionListener {
 	
 	LoginFrame loginFrame;
 	boolean duplicationCheckFlag = false;	// 중복 검사 확인 플래그
-			
+	
+	// 생성자
 	public RegisterFrame(LoginFrame _lf) {
 		loginFrame = _lf;
 		
@@ -257,6 +258,7 @@ public class RegisterFrame extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 	
+	// ActionListener 메소드 구현
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();

@@ -60,6 +60,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		setVisible(true);
 	}
 	
+	// 컴포넌트 배치 생성자
 	private void initComponent() {
 		String option[] = {"구분", "내용"};
 		optionComboBox = new JComboBox<>(option);
@@ -192,6 +193,8 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		setLocationRelativeTo(null);	// 모니터 중앙 표시
 	}
 	
+	// ActionListener 메소드 구현
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		
@@ -268,8 +271,9 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 	}
 	
+	// 조건에 따른 검색 메소드
 	private void search() {
-		ArrayList<RowFilter<Object, Object>> filters = new ArrayList<>();
+		ArrayList<RowFilter<Object, Object>> filters = new ArrayList<>();	// 필터를 저장할 ArrayList 선언
 		
 		// 검색 옵션 설정
 		String inputText = inputField.getText().trim();	// 검색어 저장
@@ -318,6 +322,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 	}
 	
+	// 개인 일정 테이블 새로고침 메소드
 	public void refreshPersonalScheduleTable() {
 		tableModel.setRowCount(0);	// 테이블 모델 초기화
 		
@@ -344,6 +349,7 @@ public class CheckScheduleDialog extends JDialog implements ActionListener {
 		}
 	}
 	
+	// 그룹 일정 테이블 새로고침 메소드
 	public void refreshGroupScheduleTable() {
 		tableModel.setRowCount(0);	// 테이블 모델 초기화
 		
