@@ -41,9 +41,9 @@
 #### 2.2.1 Mysql Workbench 프로그램 활용하여 데이터베이스 생성
 - root 계정으로 로그인해 **ScheduleManagement** 데이터베이스를 생성
 
-#### 2.2.2 테이블 생성
-- **파일 1 :** `src/DB/tables.sql`을 횔용
-- **테스트용 데이터 :** `src/DB/testData.sql`을 활용
+#### 2.2.2 테이블 생성 및 테스트 데이터 산입
+- **테이블 생성 :** `ScheduleManagement/create_tables.sql` 파일에 SQL 코드를 활용해 총 5개의 테이블을 생성 되어야 합니다.
+- **테스트 데이터 :** `ScheduleManagement/sample_data.sql` 파일에서 SQL 코드를 활용해 각각의 테이블에 데이터를 산입해 프로그램을 테스트할 수 있습니다.
 
 #### 2.2.3 Java 코드에 MySQL 연결
 - 프로젝트에서 데이터베이스 연결을 위해 다음과 같이 설정해야 합니다.
@@ -76,11 +76,3 @@ public class DBC {
 3. 코드를 작성하면 main method 위에 **Run | Debug** 버튼이 생깁니다.
 4. Run 또는 Debug 버튼 클릭하여 실행 할 수 있습니다.
 ---------------------------------
-
-### 4. 코드 문의처
-
-#### GUI 및 기능
-- ?
-
-#### BD
-- ?
