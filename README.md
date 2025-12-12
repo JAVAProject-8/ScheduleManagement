@@ -42,13 +42,13 @@
 - root 계정으로 로그인해 **ScheduleManagement** 데이터베이스를 생성
 
 #### 2.2.2 테이블 생성 및 테스트 데이터 산입
-- **테이블 생성 :** `ScheduleManagement/create_tables.sql` 파일에 SQL 코드를 활용해 총 5개의 테이블을 생성 되어야 합니다.
-- **테스트 데이터 :** `ScheduleManagement/sample_data.sql` 파일에서 SQL 코드를 활용해 각각의 테이블에 데이터를 산입해 프로그램을 테스트할 수 있습니다.
+- **파일 1 :** `ScheduleManagement/create_tables.sql` 파일에 SQL 코드를 활용해 총 5개의 테이블을 생성 되어야 합니다.
+- **파일 2 :** `ScheduleManagement/sample_data.sql` 파일에서 SQL 코드를 활용해 각각의 테이블에 데이터를 산입해 프로그램을 테스트할 수 있습니다.
 
 #### 2.2.3 Java 코드에 MySQL 연결
 - 프로젝트에서 데이터베이스 연결을 위해 다음과 같이 설정해야 합니다.
 
-**파일 2 :** `src/DB/DBC.java`
+**파일 3 :** `src/DB/DBC.java`
 
 ```java
 public class DBC {
